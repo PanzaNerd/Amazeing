@@ -1,0 +1,4 @@
+[flake8]
+ignore = W191, E101
+max-line-length = 100
+exclude = .venv, build, dist, output_validator.py

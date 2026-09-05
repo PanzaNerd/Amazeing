@@ -1,0 +1,9 @@
+# AMAZEING default configuration
+# One KEY=VALUE per line, lines starting with # are comments
+WIDTH=20
+HEIGHT=15
+ENTRY=0,0
+EXIT=19,14
+OUTPUT_FILE=maze.txt
+PERFECT=True
+SEED=42
