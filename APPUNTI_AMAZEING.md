@@ -8,6 +8,7 @@ letto/elaborato → cosa ne deriva**. Niente codice, illustrazioni semplici.
 ## INDICE
 
 1. La cronologia del programma (la mappa)
+   - Come eseguire e testare il programma (comandi da terminale)
    - 1.1 L'INPUT: config.txt
    - 1.2 La griglia e i muri (decimale, binario, esadecimale)
    - 1.3 Il seed
@@ -16,7 +17,7 @@ letto/elaborato → cosa ne deriva**. Niente codice, illustrazioni semplici.
    - 1.6 L'OUTPUT: il file esadecimale
    - 1.7 Il display interattivo
    - 1.8 Il main e la gestione errori
-2. I moduli: chi fa cosa
+2. I moduli
 3. Glossario
 
 ---
@@ -36,6 +37,64 @@ python3 a_maze_ing.py config.txt
 4. OUTPUT       griglia + percorso ──▶ file esadecimale
 
 5. DISPLAY      griglia + percorso ──▶ terminale interattivo
+```
+
+## Come eseguire e testare il programma (comandi da terminale)
+
+Tutto parte dalla cartella del progetto:
+
+```bash
+cd "~/Desktop/python repo/Common_Core_2/python/AMAZEING"
+source .venv/bin/activate        # attiva il venv (pip di sistema e' bloccato)
+```
+
+**Eseguire il programma** (genera `maze.txt` e apre il display interattivo):
+
+```bash
+make run
+# oppure direttamente:
+python3 a_maze_ing.py config.txt
+```
+
+Nel display: `r` = rigenera, `p` = mostra/nascondi percorso, `c` = cambia
+colore muri, `q` = esci. Uscita con codice 0 = tutto ok, 1 = errore.
+
+**Test automatici** (16 test):
+
+```bash
+make test                                                # tutta la suite
+python3 -m pytest tests/test_config_parser.py -v         # solo il parser
+python3 -m pytest tests/test_output_writer.py::test_path_to_nesw_simple -v   # un singolo test
+```
+
+**Controlli di qualita'** (richiesti dal subject):
+
+```bash
+make lint          # flake8 + mypy (flag del subject)
+make lint-strict   # flake8 + mypy --strict (piu' severo)
+make debug         # esegue dentro pdb (il debugger, come gdb)
+```
+
+**Validatore del subject** (sul file appena generato; MAI pushato):
+
+```bash
+python3 output_validator.py maze.txt
+# se non stampa nulla: i muri delle celle vicine sono coerenti (OK)
+```
+
+**Verifiche manuali veloci**:
+
+```bash
+python3 a_maze_ing.py                    # senza argomento → Usage + exit 1
+python3 a_maze_ing.py file_che_non_esiste.txt   # → errore chiaro + exit 1
+make run && make run                     # due volte: maze.txt identico (SEED=42 = riproducibilita')
+```
+
+**Pacchetto riusabile** (per l'evaluation):
+
+```bash
+make build    # crea dist/mazegen-1.0.0-py3-none-any.whl
+make clean    # rimuove cache e artefatti (__pycache__, dist, ...)
 ```
 
 ## 1.1 L'INPUT: config.txt
@@ -316,10 +375,14 @@ lati), e quando è bloccato torna indietro.
 interni extra (creano cicli = più percorsi), controllando di non creare
 mai un'area aperta 3x3 (corridoi larghi max 2 celle).
 
-**Il "42":** disegnato con celle completamente chiuse (tutti e 4 i muri,
-valore F) — isole inaccessibili che la generazione non tocca. Se il
-labirinto è troppo piccolo il 42 si omette e il main stampa un messaggio
-d'errore, poi il programma CONTINUA (il subject lo permette).
+**Il "42":** OBBLIGATORIO (subject: "the maze must contain a visible
+'42'") — disegnato con celle completamente chiuse (tutti e 4 i muri,
+valore F) — isole inaccessibili che la generazione non tocca. Lo
+piazziamo al CENTRO della griglia (come nelle immagini d'esempio del
+subject) e nel display le sue celle sono riempite con blocchi bianchi
+brillanti: le cifre appaiono come silhouette piene. Unica eccezione: se il labirinto è troppo piccolo il 42
+si può omettere — il main stampa un messaggio d'errore e il programma
+CONTINUA.
 
 ## 1.5 Il percorso più breve: BFS
 
@@ -345,12 +408,25 @@ se y aumenta → S.
 
 ## 1.7 Il display interattivo
 
-Il labirinto si mostra nel terminale con colori (codici ANSI: sequenze
-di caratteri speciali che il terminale interpreta come colori). Tasti:
-`r` rigenera (richiama generate con gli stessi parametri), `p`
-mostra/nascondi percorso, `c` cambia colore muri, `q` esce. Disegno
-ASCII `+---+` con due for annidati: I = entrata, O = uscita, . =
-percorso.
+Il labirinto si mostra nel terminale in **stile minimale pulito: 1
+cella = 1 carattere**, muri `─` orizzontali e `│` verticali con **gli
+incroci giusti** (`┼`, `┬`, `┴`, `├`, `┤`, `┌`, `┐`, `└`, `┘`): la
+struttura si legge come un labirinto vero. Un labirinto 20x15 è largo
+41 caratteri. Lo sfondo NON viene forzato: vale il tema del
+terminale. Sotto il labirinto c'è un **menu numerato in INGLESE**
+dentro una cornice (tutto il programma è in inglese, come il subject):
+`1) Regenerate maze` (richiama generate con gli stessi parametri),
+`2) Show/hide path`, `3) Change wall colour`, `q) Quit`. I = entrata,
+O = uscita, **percorso = catena di punti `·` verdi** (si vede a colpo
+d'occhio dove si passa), **"42" = blocco unico e uniforme: ogni cella
+del pattern è un quadratino PIENO dello stesso colore dei muri, e i
+muri interni delle cifre sono dello stesso colore → il 42 appare come
+un blocco compatto senza linee interne, in qualsiasi colore scelto
+con `3` — cifre 3x4 celle, il 2 ha lati di 3 caselle che si incrociano
+a 90 gradi** (i buchi delle cifre sono celle chiuse mai attraversate
+dal labirinto: 4 e 2 si leggono perfettamente). **Il muro esterno del
+labirinto è completamente chiuso**: entry ed exit sono celle marcate
+dentro il bordo, non aperture.
 
 ## 1.8 Il main e la gestione errori
 
@@ -362,16 +438,19 @@ un except finale di sicurezza (mai traceback sullo schermo).
 
 ---
 
-# 2. I moduli: chi fa cosa
+# 2. I moduli
 
-| File | Chi | Cosa fa | Spiegato in |
-|------|-----|---------|-------------|
-| config_parser.py | mpanzani | legge e valida config.txt → Config | 1.1 |
-| mazegen.py | roblomba | genera il labirinto + BFS | 1.4, 1.5 |
-| output_writer.py | mpanzani | scrive il file esadecimale | 1.6 |
-| display.py | roblomba | terminale interattivo | 1.7 |
-| a_maze_ing.py | mpanzani | orchestrazione + errori | 1.8 |
-| pacchetto mazegen | roblomba | modulo riusabile installabile con pip | README |
+Tutto è stato fatto e studiato INSIEME da mpanzani e roblomba: ogni
+file è di tutti e due.
+
+| File | Cosa fa | Spiegato in |
+|------|---------|-------------|
+| config_parser.py | legge e valida config.txt → Config | 1.1 |
+| mazegen.py | genera il labirinto + BFS | 1.4, 1.5 |
+| output_writer.py | scrive il file esadecimale | 1.6 |
+| display.py | terminale interattivo | 1.7 |
+| a_maze_ing.py | orchestrazione + errori | 1.8 |
+| pacchetto mazegen | modulo riusabile installabile con pip | README |
 
 # 3. Glossario
 

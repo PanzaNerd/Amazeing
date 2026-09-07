@@ -20,14 +20,14 @@ Generate a maze (writes the output file, then opens the interactive display):
 
 	python3 a_maze_ing.py config.txt
 
-Interactive display keys:
+Interactive display menu:
 
-| Key | Action                    |
-|-----|---------------------------|
-| r   | regenerate a new maze     |
-| p   | show/hide shortest path   |
-| c   | change wall colours       |
-| q   | quit                      |
+| Key | Action                 |
+|-----|------------------------|
+| 1   | regenerate a new maze  |
+| 2   | show/hide shortest path |
+| 3   | change wall colour     |
+| q   | quit                   |
 
 Development targets:
 
@@ -103,9 +103,11 @@ file or the output format, and can be imported in any future project.
 
 ## Team and project management
 
+Roles: both team members took part in every role — design, parsing,
+generation, output writing, display and testing.
+
 This project was carried out entirely together by mpanzani and roblomba:
-both worked on every part (parsing, generation, output, display) and
-studied the code step by step as a pair.
+both worked on every part and studied the code step by step as a pair.
 
 Anticipated planning and how it evolved: we started with a split of
 responsibilities, then switched to working on everything together so that
