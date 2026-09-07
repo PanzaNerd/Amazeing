@@ -442,22 +442,116 @@ più nessun vicino nuovo → tutte le celle sono state scavate → fatto.
 Tutti connessi, un solo percorso tra due celle qualsiasi = labirinto
 PERFETTO (in termini di grafi: un albero).
 
-Esempio 3x3 (le lettere = ordine di scavo, dalla A alla I):
+### La traccia vera, passo per passo (labirinto 4x4, seed 42)
+
+Ecco le mosse ESATTE del programma su un labirinto 4x4 con seed 42 (il
+dado è quello vero del generatore). Prima di tutto, il rituale della
+talpa ad ogni cella — sempre lo stesso, 5 passi:
+
+1. Guarda i 4 vicini in ordine fisso: NORD, EST, SUD, OVEST.
+2. Tiene solo quelli MAI visitati (la lista dei candidati).
+3. Tira il dado e ne sceglie uno (il dado esce dal librone del seed).
+4. Apre il muro DA TUTTI E DUE i lati (le due monete dello stesso muro).
+5. Marca visitata la nuova cella, ci entra e allunga la corda.
+
+Se la lista dei candidati è VUOTA → bloccata → torna indietro di una
+cella lungo la corda e ripete il rituale da lì. La corda (lo stack) è
+la memoria: in cima c'è SEMPRE la cella attuale.
+
+Stato iniziale (tutte le celle chiuse):
 
 ```
-+---+---+---+
-| A   B | C |
-+   +---+   +
-| D   E   F |
-+   +---+---+
-| G   H   I |
-+---+---+---+
++---+---+---+---+
+|   |   |   |   |
++---+---+---+---+
+|   |   |   |   |
++---+---+---+---+
+|   |   |   |   |
++---+---+---+---+
+|   |   |   |   |
++---+---+---+---+
 ```
 
-La talpa ha scavato A→B→C→F→E→D→G→H→I scegliendo ogni volta a caso tra
-i vicini nuovi. In I è bloccata: ripercorre la corda fino in fondo e
-non trova più nessun vicino nuovo → fine. Controlla sul disegno: tra
-due celle qualsiasi c'è un solo percorso.
+Le mosse (per ogni passo: dove sei, chi sono i candidati, cosa esce
+dal dado):
+
+```
+ 1   (0,0)  candidati Est, Sud              dado: Est   → scava (1,0)
+ 2   (1,0)  candidati Est, Sud              dado: Est   → scava (2,0)
+ 3   (2,0)  candidati Est, Sud              dado: Sud   → scava (2,1)
+ 4   (2,1)  candidati Est, Sud, Ovest       dado: Est   → scava (3,1)
+ 5   (3,1)  candidati Nord, Sud             dado: Nord  → scava (3,0)
+ 6   (3,0)  candidati: NESSUNO → TORNA INDIETRO (si torna a (3,1))
+ 7   (3,1)  candidato Sud                   dado: Sud   → scava (3,2)
+ 8   (3,2)  candidati Sud, Ovest            dado: Sud   → scava (3,3)
+ 9   (3,3)  candidato Ovest                 dado: Ovest→ scava (2,3)
+10   (2,3)  candidati Nord, Ovest           dado: Ovest→ scava (1,3)
+11   (1,3)  candidati Nord, Ovest           dado: Nord  → scava (1,2)
+12   (1,2)  candidati Nord, Est, Ovest      dado: Nord  → scava (1,1)
+13   (1,1)  candidato Ovest                 dado: Ovest→ scava (0,1)
+14   (0,1)  candidato Sud                   dado: Sud   → scava (0,2)
+15   (0,2)  candidato Sud                   dado: Sud   → scava (0,3)
+16   (0,3)  candidati: NESSUNO → TORNA INDIETRO
+17-19     (0,2), (0,1), (1,1): NESSUNO → si riavvolge la corda
+20   (1,2)  candidato Est (è rimasto nuovo!) dado: Est → scava (2,2)
+21   (2,2)  candidati: NESSUNO → TORNA INDIETRO
+22-31     tutti NESSUNO: la corda si riavvolge fino a (0,0) e poi si
+          svuota → FINE
+```
+
+Risultato finale (16 celle, 15 tunnel aperti: in un albero i rami sono
+sempre uno in meno dei nodi):
+
+```
++---+---+---+---+
+|           |   |
++---+---+   +   +
+|       |   |   |
++   +---+---+   +
+|   |   |   |   |
++   +---+---+   +
+|   |       |   |
++---+---+---+---+
+```
+
+### Attenzione: due errori da NON dire all'evaluation
+
+- "La talpa non torna mai indietro" → SBAGLIATO. Torna indietro
+  continuamente: è il backtracking (mossa 6 della traccia). Senza,
+  al primo vicolo cieco si fermerebbe per sempre con quasi tutte le
+  celle ancora chiuse.
+- "La generazione finisce all'uscita" → SBAGLIATO. La talpa non sa
+  nemmeno che l'uscita esiste: scava TUTTE le celle e finisce quando
+  la corda è vuota. Nella traccia l'uscita (3,3) è scavata alla mossa
+  8 ma la generazione continua fino alla 31. Il percorso
+  entrata→uscita lo trova DOPO la BFS (1.5).
+
+Cose da notare:
+
+- (3,0) alla mossa 6 è un VICOLO CIECO: Nord e Est sono bordo, Ovest è
+  (2,0) già visitata, Sud è (3,1) da cui è venuta. Il backtracking è
+  semplicemente: riavvolgi la corda finché trovi una cella con un
+  candidato rimasto (alla mossa 20: (1,2) aveva ancora Est, il vicino
+  (2,2) che alla mossa 12 il dado NON aveva scelto).
+- Il muro si apre da TUTTI E DUE i lati perché è scritto due volte: la
+  moneta Est di A e la moneta Ovest di B sono lo STESSO muro. Se
+  aprissi un lato solo, le due celle non sarebbero d'accordo e il
+  validatore direbbe "Wrong encoding".
+- Mai scavare verso una cella già visitata: si creerebbe una
+  scorciatoia, cioè un secondo percorso → il labirinto non sarebbe più
+  perfetto.
+- "In base a cosa decide dove andare": non decide con un criterio.
+  Costruisce la lista dei candidati in ordine Nord, Est, Sud, Ovest e
+  tira il dado. Con SEED=42 il dado esce sempre uguale → stesse mosse
+  → stesso labirinto.
+
+**Frase pronta per l'evaluation:** "Parto da una griglia di celle tutte
+chiuse. Da ogni cella raccolgo i vicini mai visitati, ne scelgo uno a
+caso con un generatore pilotato dal seed, apro il muro da entrambi i
+lati e tengo la strada fatta su uno stack. Quando non ci sono più
+vicini nuovi torno indietro finché trovo una cella con un vicino
+nuovo. Quando lo stack è vuoto tutte le celle sono state visitate: il
+risultato è un albero ricoprente, cioè un labirinto perfetto."
 
 ### PERFECT=False: le scorciatoie
 
