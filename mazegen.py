@@ -33,41 +33,32 @@ E: int = 2   # moneta del muro EST
 S: int = 4   # moneta del muro SUD
 W: int = 8   # moneta del muro OVEST
 
-# Disegno della cifra "4" (3 colonne x 4 righe):
+# Disegno della cifra "4" (3 colonne x 5 righe):
 #   # . #
 #   # . #
 #   # # #
+#   . . #
 #   . . #
 FOUR: list[tuple[int, int]] = [
 	(0, 0), (2, 0),
 	(0, 1), (2, 1),
 	(0, 2), (1, 2), (2, 2),
-	(2, 3),
+	(2, 3), (2, 4)
 ]
 
-# Buchi interni della cifra "4" (restano chiusi, cosi' la cifra si
-# legge perfettamente):
-FOUR_HOLES: list[tuple[int, int]] = [
-	(1, 0), (1, 1),
-	(0, 3), (1, 3),
-]
-
-# Disegno della cifra "2" (3 colonne x 4 righe): lati di 3 caselle che
+# Disegno della cifra "2" (3 colonne x 5 righe): lati di 3 caselle che
 # si incrociano a 90 gradi, tutti gli spigoli visibili.
 #   # # #
 #   . . #
 #   # # #
+#   # . .
 #   # # #
 TWO: list[tuple[int, int]] = [
 	(0, 0), (1, 0), (2, 0),
 	(2, 1),
 	(0, 2), (1, 2), (2, 2),
-	(0, 3), (1, 3), (2, 3),
-]
-
-# Buchi interni della cifra "2" (restano chiusi):
-TWO_HOLES: list[tuple[int, int]] = [
-	(0, 1), (1, 1),
+	(0, 3), (0, 4), (1, 4),
+	(2, 4),
 ]
 
 
@@ -92,7 +83,6 @@ class MazeGenerator:
 		self.rng = random.Random(seed)
 		self.grid: list[list[int]] = []
 		self.forty_two: list[tuple[int, int]] = []
-		self.forty_two_holes: list[tuple[int, int]] = []
 		self.has_42 = False
 		self.entry = (0, 0)
 		self.exit = (width - 1, height - 1)
@@ -161,40 +151,31 @@ class MazeGenerator:
 	def _carve_42(self, with_42: bool) -> None:
 		"""Disegna il pattern "42" come celle completamente chiuse.
 
-		Il pattern viene piazzato al centro della griglia. Le sue celle
-		e i buchi interni delle cifre restano chiusi e verranno marcati
-		come gia' visitati, cosi' la generazione non li attraversa mai e
-		le cifre si leggono perfettamente. Se il labirinto e' troppo
-		piccolo o il pattern coprirebbe entry/exit, si salta e has_42
-		resta False.
+		Il pattern viene piazzato al centro della griglia. Le celle dei
+		mattoncini restano chiuse e vengono marcate come gia' visitate,
+		cosi' la generazione non le attraversa mai e le cifre restano
+		isole chiuse. Le celle vuote delle cifre invece sono normali: il
+		labirinto ci scava dentro e il percorso puo' passarci. Se il
+		labirinto e' troppo piccolo o il pattern coprirebbe entry/exit,
+		si salta e has_42 resta False.
 		"""
 		self.forty_two = []
-		self.forty_two_holes = []
 		self.has_42 = False
 		if not with_42:
 			return
-		if self.width < 9 or self.height < 6:
+		if self.width < 9 or self.height < 5:
 			return
 		start_x = (self.width - 7) // 2
-		start_y = (self.height - 4) // 2
+		start_y = (self.height - 5) // 2
 		pattern: list[tuple[int, int]] = []
-		holes: list[tuple[int, int]] = []
 		for dx, dy in FOUR:
 			pattern.append((start_x + dx, start_y + dy))
-		for dx, dy in FOUR_HOLES:
-			holes.append((start_x + dx, start_y + dy))
 		for dx, dy in TWO:
 			pattern.append((start_x + 4 + dx, start_y + dy))
-		for dx, dy in TWO_HOLES:
-			holes.append((start_x + 4 + dx, start_y + dy))
 		for cell in pattern:
 			if cell == self.entry or cell == self.exit:
 				return
-		for cell in holes:
-			if cell == self.entry or cell == self.exit:
-				return
 		self.forty_two = pattern
-		self.forty_two_holes = holes
 		self.has_42 = True
 
 	def _carve_maze(self) -> None:
@@ -212,8 +193,6 @@ class MazeGenerator:
 			visited.append(row)
 
 		for x, y in self.forty_two:
-			visited[y][x] = True
-		for x, y in self.forty_two_holes:
 			visited[y][x] = True
 
 		stack: list[tuple[int, int]] = [self.entry]
@@ -279,8 +258,6 @@ class MazeGenerator:
 			else:
 				continue
 			if (x, y) in self.forty_two or (nx, ny) in self.forty_two:
-				continue
-			if (x, y) in self.forty_two_holes or (nx, ny) in self.forty_two_holes:
 				continue
 			if not self._has_wall(x, y, mask_here):
 				continue

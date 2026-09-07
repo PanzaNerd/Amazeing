@@ -11,8 +11,8 @@ letto/elaborato → cosa ne deriva**. Niente codice, illustrazioni semplici.
    - Come eseguire e testare il programma (comandi da terminale)
    - 1.1 L'INPUT: config.txt
    - 1.2 La griglia e i muri (decimale, binario, esadecimale)
-   - 1.3 Il seed
-   - 1.4 La generazione (backtracker, PERFECT=False, il "42")
+   - 1.3 Il seed (la casualità riproducibile)
+   - 1.4 La generazione (la talpa che scava tunnel)
    - 1.5 Il percorso più breve (BFS)
    - 1.6 L'OUTPUT: il file esadecimale
    - 1.7 Il display interattivo
@@ -56,7 +56,7 @@ make run
 python3 a_maze_ing.py config.txt
 ```
 
-Nel display: `r` = rigenera, `p` = mostra/nascondi percorso, `c` = cambia
+Nel display: `1` = rigenera, `2` = mostra/nascondi percorso, `3` = cambia
 colore muri, `q` = esci. Uscita con codice 0 = tutto ok, 1 = errore.
 
 **Test automatici** (16 test):
@@ -356,33 +356,137 @@ muri sono chiusi."
 
 ## 1.3 Il seed: la casualità riproducibile
 
-Nel passo 2 il generatore riceve il seed. "Casuale ma riproducibile"
-sembra una contraddizione: in realtà la casualità del computer è una
-sequenza di numeri calcolata da un punto di partenza. Se il punto di
-partenza (il **seed**) è lo stesso, la sequenza è identica → stesso
-labirinto. `random.Random(42)` in Python = `srand(42)` in C. Se il
-config non ha SEED → ogni run produce un labirinto diverso.
+### Il dubbio frequente: il seed è il punto di partenza I?
 
-## 1.4 La generazione (recursive backtracker)
+NO. Sono due cose di due mondi diversi:
 
-**Labirinto perfetto** = tra due celle qualsiasi esiste UN SOLO percorso
-(è un albero, in termini di grafi). L'algoritmo "recursive backtracker"
-(una DFS) lo garantisce gratis: parte da una cella, visita un vicino mai
-visitato togliendo il muro tra loro (sempre a specchio, da entrambi i
-lati), e quando è bloccato torna indietro.
+- **ENTRY** (la I nel display) = **DOVE** entri nel labirinto: una
+  posizione, una cella (es. 0,0).
+- **SEED** = **QUALE** labirinto ottieni: un numero che sceglie le
+  "estrazioni a sorte" del generatore.
 
-**PERFECT=False:** dopo la generazione perfetta si aprono alcuni muri
-interni extra (creano cicli = più percorsi), controllando di non creare
-mai un'area aperta 3x3 (corridoi larghi max 2 celle).
+Il seed non c'entra nulla con la I: la I viene da ENTRY nel config, il
+seed viene da SEED nel config.
 
-**Il "42":** OBBLIGATORIO (subject: "the maze must contain a visible
-'42'") — disegnato con celle completamente chiuse (tutti e 4 i muri,
-valore F) — isole inaccessibili che la generazione non tocca. Lo
-piazziamo al CENTRO della griglia (come nelle immagini d'esempio del
-subject) e nel display le sue celle sono riempite con blocchi bianchi
-brillanti: le cifre appaiono come silhouette piene. Unica eccezione: se il labirinto è troppo piccolo il 42
-si può omettere — il main stampa un messaggio d'errore e il programma
-CONTINUA.
+### Cos'è la casualità del computer
+
+Il computer non sa tirare dadi veri. Immagina che ogni computer abbia
+lo stesso librone di tiri di dado (milioni di tiri da 1 a 6, scritti
+in fila). "Dammi un numero a caso" = "leggi il prossimo tiro della
+pagina". Il **seed** = **la pagina da cui inizi a leggere**:
+
+- SEED=42 → si parte sempre da pagina 42 → stessi tiri → il generatore
+  fa le stesse scelte → stesso labirinto.
+- Niente SEED → si parte da una pagina scelta dall'orologio del
+  momento → ogni run un labirinto diverso.
+
+"Casuale ma riproducibile" = le scelte sono a sorte, ma ripartendo
+dalla stessa pagina sono sempre le stesse. `random.Random(42)` in
+Python = `srand(42)` in C. Nei videogiochi è il seed del mondo
+(Minecraft).
+
+### Perché serve
+
+Per rifare lo stesso labirinto a comando: testare, dimostrare,
+confrontare. Con SEED=42: `make run` due volte → maze.txt identico.
+
+**Frase pronta per l'evaluation:** "Il computer genera numeri
+pseudo-casuali da una sequenza calcolata a partire da un numero
+iniziale chiamato seed. Stesso seed → stessa sequenza → stesso
+labirinto. L'entrata invece è una posizione decisa da ENTRY nel
+config: non c'entra col seed."
+
+## 1.4 La generazione (la talpa che scava tunnel)
+
+### Il punto di partenza: tutte scatole chiuse
+
+Prima di generare, ogni cella ha TUTTI i muri chiusi (valore F = 15).
+Non è ancora un labirinto: è un blocco di scatole senza passaggi.
+
+```
++---+---+---+
+|   |   |   |
++---+---+---+
+|   |   |   |
++---+---+---+
+|   |   |   |
++---+---+---+
+```
+
+### La talpa e le sue 3 regole
+
+Immagina una TALPA che parte dalla cella d'entrata e scava tunnel.
+
+**Regola 1 — si scava solo nel nuovo.** La talpa entra SOLO in celle
+dove non è mai stato nessuno. Mai scavare verso una cella già
+visitata. Questo garantisce che tra due celle qualsiasi ci sia UN SOLO
+percorso (mai scorciatoie) = labirinto perfetto.
+
+**Regola 2 — il muro si apre da TUTTI E DUE i lati.** Quando la talpa
+passa dalla cella A alla cella B, il muro tra loro va tolto sia dalla
+scatola A sia dalla scatola B: il muro è condiviso, le monete si
+tolgono da entrambe le celle.
+
+**Regola 3 — la corda.** La talpa si trascina dietro una corda (la
+memoria dei passi fatti). Se in una cella tutti i vicini sono già
+visitati è BLOCCATA: ripercorre la corda ALL'INDIETRO finché trova una
+cella con un vicino mai scavato e riparte da lì. Questo "tornare
+indietro" è il backtracking.
+
+**La scelta a caso:** quando ha più vicini nuovi ne sceglie uno A CASO
+— qui entra il seed di 1.3: i tiri di dado decidono la strada → stesso
+seed = stessa strada = stesso labirinto.
+
+**La fine:** quando la talpa torna indietro fino all'entrata e non c'è
+più nessun vicino nuovo → tutte le celle sono state scavate → fatto.
+Tutti connessi, un solo percorso tra due celle qualsiasi = labirinto
+PERFETTO (in termini di grafi: un albero).
+
+Esempio 3x3 (le lettere = ordine di scavo, dalla A alla I):
+
+```
++---+---+---+
+| A   B | C |
++   +---+   +
+| D   E   F |
++   +---+---+
+| G   H   I |
++---+---+---+
+```
+
+La talpa ha scavato A→B→C→F→E→D→G→H→I scegliendo ogni volta a caso tra
+i vicini nuovi. In I è bloccata: ripercorre la corda fino in fondo e
+non trova più nessun vicino nuovo → fine. Controlla sul disegno: tra
+due celle qualsiasi c'è un solo percorso.
+
+### PERFECT=False: le scorciatoie
+
+Dopo il labirinto perfetto si aprono di proposito alcuni muri interni
+extra → nascono SCORCIATOIE (cicli) → più di un percorso possibile.
+Ogni apertura extra si tiene solo se NON crea una zona aperta 3x3 (una
+piazzetta): i corridoi restano larghi al massimo 2 celle.
+
+### Il "42"
+
+OBBLIGATORIO (subject: "the maze must contain a visible '42'"). Le
+celle dei MATTONCINI del disegno "42" sono scatole COMPLETAMENTE chiuse
+(F = tutti i muri) piazzate al CENTRO della griglia. Prima che la talpa
+parta vengono marcate come "già visitate": per la talpa sono cemento
+armato → non ci scava mai dentro → i mattoncini restano isole chiuse, e
+anche il risolutore (1.5) non ci passa mai. Le celle VUOTE delle cifre
+invece sono celle normali: la generazione ci scava dentro e il percorso
+può passarci — il 42 resta leggibile perché i mattoncini sono blocchi
+pieni. Nel display i mattoncini sono quadratini pieni del colore dei
+muri: il 42 appare come un blocco compatto e le cifre si leggono bene.
+Se il labirinto è troppo piccolo il 42 si omette: il main stampa un
+messaggio e il programma CONTINUA.
+
+### Riepilogo in 4 passi
+
+1. Tutte le celle chiuse (scatole).
+2. Si marcano i mattoncini del 42 come cemento: mai scavati.
+3. La talpa scava il labirinto perfetto con le 3 regole.
+4. Se PERFECT=False si aprono scorciatoie extra (controllo 3x3).
 
 ## 1.5 Il percorso più breve: BFS
 
@@ -418,15 +522,16 @@ dentro una cornice (tutto il programma è in inglese, come il subject):
 `1) Regenerate maze` (richiama generate con gli stessi parametri),
 `2) Show/hide path`, `3) Change wall colour`, `q) Quit`. I = entrata,
 O = uscita, **percorso = catena di punti `·` verdi** (si vede a colpo
-d'occhio dove si passa), **"42" = blocco unico e uniforme: ogni cella
-del pattern è un quadratino PIENO dello stesso colore dei muri, e i
-muri interni delle cifre sono dello stesso colore → il 42 appare come
-un blocco compatto senza linee interne, in qualsiasi colore scelto
-con `3` — cifre 3x4 celle, il 2 ha lati di 3 caselle che si incrociano
-a 90 gradi** (i buchi delle cifre sono celle chiuse mai attraversate
-dal labirinto: 4 e 2 si leggono perfettamente). **Il muro esterno del
-labirinto è completamente chiuso**: entry ed exit sono celle marcate
-dentro il bordo, non aperture.
+d'occhio dove si passa), **"42" = blocco unico e uniforme: ogni
+mattoncino del pattern è un quadratino PIENO dello stesso colore dei
+muri, e i muri interni delle cifre sono dello stesso colore → il 42
+appare come un blocco compatto senza linee interne, in qualsiasi
+colore scelto con `3` — cifre 3x5 celle, il 2 ha lati di 3 caselle
+che si incrociano a 90 gradi** (le celle vuote delle cifre sono celle
+NORMALI: il labirinto ci scava dentro e il percorso ci passa; i
+mattoncini restano isole chiuse, quindi 4 e 2 si leggono lo stesso).
+**Il muro esterno del labirinto è completamente chiuso**: entry ed
+exit sono celle marcate dentro il bordo, non aperture.
 
 ## 1.8 Il main e la gestione errori
 
