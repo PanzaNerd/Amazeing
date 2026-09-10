@@ -163,6 +163,21 @@ successivo, e ogni campo produce un effetto preciso:
 | PERFECT | True = un solo percorso entrata→uscita |
 | SEED | stesso seed = stesso labirinto (vedi 1.3) |
 
+### Le dimensioni NON sono fisse
+
+WIDTH e HEIGHT vengono dal config: il codice non ha nessuna taglia
+cucita dentro e funziona con qualunque misura (minimo 2x2, imposto dal
+parser; massimo nessuno). WIDTH = larghezza (colonne), HEIGHT =
+altezza (righe). All'evaluation il config sarà diverso dal nostro:
+dimensioni, ENTRY, EXIT e PERFECT possono cambiare e il programma deve
+gestirli tutti. Il "42" invece richiede spazio (almeno 9 colonne x 5
+righe): sotto quella taglia viene omesso (messaggio + programma
+continua, il subject lo ammette).
+
+Per allenarsi: modificare config.txt con altre misure (es. WIDTH=5
+HEIGHT=5, WIDTH=40 HEIGHT=20, PERFECT=False) e rilanciare il
+programma.
+
 ## 1.2 La griglia e i muri (dove entrano decimale, binario, esadecimale)
 
 ### I tre sistemi di numeri e dove compaiono
@@ -500,17 +515,19 @@ dal dado):
 ```
 
 Risultato finale (16 celle, 15 tunnel aperti: in un albero i rami sono
-sempre uno in meno dei nodi):
+sempre uno in meno dei nodi; con il 42 presente i nodi da contare sono
+le celle scavate = celle totali meno i mattoncini, che restano isole
+fuori dall'albero):
 
 ```
 +---+---+---+---+
 |           |   |
 +---+---+   +   +
-|       |   |   |
-+   +---+---+   +
-|   |   |   |   |
-+   +---+---+   +
+|       |       |
++   +   +---+   +
 |   |       |   |
++   +   +---+   +
+|   |           |
 +---+---+---+---+
 ```
 
@@ -525,9 +542,20 @@ sempre uno in meno dei nodi):
   la corda è vuota. Nella traccia l'uscita (3,3) è scavata alla mossa
   8 ma la generazione continua fino alla 31. Il percorso
   entrata→uscita lo trova DOPO la BFS (1.5).
+- "Il percorso della talpa è il percorso del labirinto" → SBAGLIATO.
+  La talpa fa deviazioni nei vicoli ciechi (es. (3,0)) che nel
+  labirinto finale non contano. La generazione produce i MURI, non un
+  percorso. Il percorso nasce dopo, dalla BFS sui muri aperti: nella
+  traccia è (0,0)→(1,0)→(2,0)→(2,1)→(3,1)→(3,2)→(3,3), senza
+  deviazioni.
 
 Cose da notare:
 
+- I muri NON "sorgono" dove la talpa non passa: c'erano GIÀ tutti
+  all'inizio (ogni cella nasce con le 4 monete). La talpa ne RIMUOVE
+  alcuni (i passaggi): i muri finali sono quelli rimasti, cioè
+  esattamente dove non è mai passata. (In PERFECT=False può anche
+  richiuderne uno, se l'apertura creerebbe una zona 3x3.)
 - (3,0) alla mossa 6 è un VICOLO CIECO: Nord e Est sono bordo, Ovest è
   (2,0) già visitata, Sud è (3,1) da cui è venuta. Il backtracking è
   semplicemente: riavvolgi la corda finché trovi una cella con un
@@ -555,10 +583,225 @@ risultato è un albero ricoprente, cioè un labirinto perfetto."
 
 ### PERFECT=False: le scorciatoie
 
-Dopo il labirinto perfetto si aprono di proposito alcuni muri interni
-extra → nascono SCORCIATOIE (cicli) → più di un percorso possibile.
-Ogni apertura extra si tiene solo se NON crea una zona aperta 3x3 (una
-piazzetta): i corridoi restano larghi al massimo 2 celle.
+La talpa scava SEMPRE il labirinto perfetto (fase 1). Le scorciatoie
+NON le scava la talpa: sono una SECONDA passata separata del programma
+(fase 2), che parte solo se PERFECT=False. Con PERFECT=True (il nostro
+config.txt) la fase 2 non parte mai e non ci sono scorciatoie.
+
+Quando si ha PERFECT=False? Lo decide il CONFIG: la riga
+PERFECT=True/False di config.txt (vedi 1.1). Il nostro config dice
+True; un config con False (come può portarlo l'evaluator) fa partire
+la fase 2. Il programma non sceglie: obbedisce al config, e nel menu
+del display "1" rigenera con lo stesso valore.
+
+### Il rituale del piccone (5 passi, ripetuti 20 volte)
+
+1. Dado 1: una cella a caso.
+2. Dado 2: una direzione a caso (Nord, Est, Sud, Ovest).
+3. Tre controlli preliminari: la cella è un mattoncino del 42? →
+   salta. Il muro è sul bordo? → salta (il bordo non si tocca mai).
+   Il muro è già aperto? → salta.
+4. Altrimenti: apri dai due lati (le due monete, come fa la talpa).
+5. Controllo finale: è nata una piazzetta 3x3? Se sì → richiudi
+   subito (si rimette indietro); se no → resta aperta: è una
+   SCORCIATOIA.
+
+### La traccia vera dei 20 colpi (stesso 4x4, seed 42)
+
+```
+ 1. cella (1,3)  direzione EST    muro già aperto (scavato dalla talpa) → salta
+ 2. cella (3,2)  direzione NORD   muro già aperto (scavato dalla talpa) → salta
+ 3. cella (1,3)  direzione SUD    è il bordo in basso → salta
+ 4. cella (2,1)  direzione EST    muro già aperto (scavato dalla talpa) → salta
+ 5. cella (2,0)  direzione NORD   è il bordo in alto → salta
+ 6. cella (3,0)  direzione SUD    muro già aperto (scavato dalla talpa) → salta
+ 7. cella (2,2)  direzione NORD   chiuso, niente 3x3 → APERTO (scorciatoia)
+ 8. cella (3,0)  direzione OVEST  chiuso, niente 3x3 → APERTO (scorciatoia)
+ 9. cella (0,2)  direzione SUD    muro già aperto (scavato dalla talpa) → salta
+10. cella (1,0)  direzione NORD   è il bordo in alto → salta
+11. cella (1,2)  direzione NORD   muro già aperto (scavato dalla talpa) → salta
+12. cella (1,0)  direzione OVEST  muro già aperto (scavato dalla talpa) → salta
+13. cella (2,3)  direzione SUD    è il bordo in basso → salta
+14. cella (1,2)  direzione SUD    muro già aperto (scavato dalla talpa) → salta
+15. cella (1,2)  direzione NORD   muro già aperto (DI NUOVO!) → salta
+16. cella (1,1)  direzione EST    chiuso, niente 3x3 → APERTO (scorciatoia)
+17. cella (3,3)  direzione SUD    è il bordo in basso → salta
+18. cella (1,2)  direzione NORD   muro già aperto (DI NUOVO!) → salta
+19. cella (1,0)  direzione SUD    chiuso, niente 3x3 → APERTO (scorciatoia)
+20. cella (3,2)  direzione NORD   muro già aperto (scavato dalla talpa) → salta
+```
+
+Bilancio: 5 bordi + 11 già aperti + 4 a segno = 20. La talpa aveva
+aperto 15 muri su 24 interni: circa metà dei colpi becca un muro già
+aperto.
+
+### I dadi del piccone: quante facce?
+
+Il piccone fa tre lanci per tentativo:
+
+- Dado della colonna x: tante facce quante sono le colonne, numerate
+  da 0: con WIDTH=20 → 20 facce (0, 1, ..., 19) — come un d20 dei
+  giochi di ruolo, ma che parte da 0.
+- Dado della riga y: tante facce quante sono le righe: con HEIGHT=15
+  → 15 facce (0, ..., 14).
+- Dado della direzione: 4 facce: NORD, EST, SUD, OVEST (le 4 monete).
+
+Le facce sono i NOMI delle celle: la griglia ha colonne da 0 a 19 e
+righe da 0 a 14 (come gli indici degli array in C, che partono da 0).
+Il dado esce sempre un nome di cella valido.
+
+ATTENZIONE a non confondere con l'esadecimale 0-F di 1.2: quelle sono
+le 16 etichette per scrivere il numero dei muri di una cella nel FILE
+DI OUTPUT. I dadi del piccone escono coordinate e direzioni, non
+cifre esadecimali: due mondi separati.
+
+### Il piccone non ha memoria (e non gli serve)
+
+Il dado può ricapitare sulla stessa cella — anzi capita di continuo:
+nella traccia dei 20 colpi, cella (1,2) direzione NORD esce 3 volte
+(tentativi 11, 15, 18) e cella (3,2) direzione NORD 2 volte (2 e 20).
+Il piccone NON tiene nessuna lista di "celle già viste": ogni
+tentativo è indipendente.
+
+Come se la cava? Ricontrolla e basta: il muro è già aperto → salta.
+Riaprire un muro già aperto non cambia nulla, quindi non serve
+ricordare nulla. È una differenza voluta rispetto alla talpa: la
+talpa HA memoria (la griglia visited + la corda) perché la sua regola
+è "mai verso una cella già visitata"; il piccone non ha regole del
+genere e può permettersi di non ricordare nulla. Le ripetizioni sono
+anche il motivo per cui i colpi a segno sono pochi: 11 su 20 beccano
+muri già aperti.
+
+Le 4 scorciatoie aperte (creano i 4 cicli):
+  (2,2)-(2,1)  tentativo 7
+  (3,0)-(2,0)  tentativo 8
+  (1,1)-(2,1)  tentativo 16
+  (1,0)-(1,1)  tentativo 19
+
+Il labirinto NON perfetto (confronta con quello perfetto: i passaggi
+extra sono su due righe nuove):
+
+```
++---+---+---+---+
+|               |
++---+   +   +   +
+|               |
++   +   +   +   +
+|   |       |   |
++   +   +---+   +
+|   |           |
++---+---+---+---+
+```
+
+Prima (perfetto) da (1,0) a (1,1) c'era UNA sola strada: un giro
+lunghissimo di 9 passi intorno a tutto il labirinto. Ora c'è il
+passaggio diretto (1,0)-(1,1), e si è formato un CICLO di 4 celle:
+
+```
+(1,0) ---- (2,0)
+  |          |
+(1,1) ---- (2,1)
+```
+
+Due strade diverse entrata→uscita (entrambe 6 passi):
+  (0,0)→(1,0)→(1,1)→(2,1)→(3,1)→(3,2)→(3,3)
+  (0,0)→(1,0)→(2,0)→(2,1)→(3,1)→(3,2)→(3,3)
+
+Come contare i cicli: perfetto = tunnel aperti = celle - 1 (15 su 16,
+zero cicli). Ogni tunnel in più = un ciclo in più: qui 19 tunnel = 4
+cicli. La BFS (1.5) trova comunque il percorso più corto, anche con
+le scorciatoie.
+
+La zona 3x3 VIETATA (il controllo che fa richiudere il muro):
+
+```
++---+---+---+
+|           |
+|           |
+|           |
++---+---+---+
+  3 righe x 3 colonne di CELLE = 9 celle tutte aperte = piazzetta:
+  vietata dal subject (i corridoi restano larghi al massimo 2 celle)
+```
+
+### Come fa il controllo della piazzetta 3x3
+
+Un blocco di 3x3 celle ha 12 muri INTERNI: 6 orizzontali (2 piani x 3
+segmenti) e 6 verticali (2 colonne x 3 segmenti). Qui sotto la
+finestra con tutti e 12 i muri interni CHIUSI (il bordo esterno non
+conta):
+
+```
++---+---+---+
+| a | b | c |
++---+---+---+
+| d | e | f |
++---+---+---+
+| g | h | i |
++---+---+---+
+
+6 muri orizzontali interni: SUD di a,b,c e SUD di d,e,f
+6 muri verticali interni:   EST di a,d,g e EST di b,e,h
+piazzetta = tutti e 12 i segmenti interni tolti
+```
+
+Controllare una finestra con le monete: si guardano le monete SUD
+delle 6 celle in alto e le monete EST delle 6 celle a sinistra. Se
+anche UNA SOLA moneta è ancora lì, c'è un muro → non è una piazzetta.
+Se mancano tutte e 12 → piazzetta.
+
+Quando controlla: dopo OGNI colpo di piccone andato a segno, il
+programma fa il giro completo della griglia e prova tutte le finestre
+3x3 possibili (su un 20x15 sono 18x13 = 234 finestre × 12 monete
+ciascuna). Se anche una sola finestra è una piazzetta → il muro
+appena aperto si rimette subito indietro. Si controlla tutto il
+labirinto (non solo la zona del colpo) perché è più semplice: per il
+computer 234×12 controlli sono un istante.
+
+ATTENZIONE: "3x3" si conta in CELLE: 3 colonne x 3 righe = 9 celle
+con i 12 muri interni aperti. Un quadrato 2x2 tutto aperto (4 celle,
+come il ciclo dell'esempio del piccone) è LEGALE: i corridoi possono
+essere larghi fino a 2 celle, il subject vieta le zone aperte da 3 in
+su. Per questo il controllo non segnala il ciclo del 4x4: non è una
+piazzetta.
+
+### La traccia vera del controllo (4x4 finale, dopo le scorciatoie)
+
+Il giro parte dalla finestra con angolo in alto a sinistra (0,0) e
+procede in ordine. Per ogni finestra: prima le 6 monete SUD (i muri
+orizzontali interni), poi le 6 monete EST (i muri verticali interni).
+Al PRIMO muro trovato si ferma subito: la finestra non è una
+piazzetta, si passa alla successiva.
+
+```
+Finestra (0,0) - celle (0,0)..(2,2):
+  1. SUD di (0,0): PRESENTE -> STOP -> non piazzetta
+
+Finestra (1,0) - celle (1,0)..(3,2):
+  1-6.  SUD di (1,0),(2,0),(3,0),(1,1),(2,1),(3,1): assenti
+  7-11. EST di (1,0),(2,0),(1,1),(2,1),(1,2): assenti
+  12.   EST di (2,2): PRESENTE -> STOP -> non piazzetta
+  (11 controlli su 12 passati! Il ciclo 2x2 era quasi una piazzetta:
+  a salvare la finestra è l'ultimo muro, EST di (2,2))
+
+Finestra (0,1) - celle (0,1)..(2,3):
+  1-5. SUD di (0,1),(1,1),(2,1),(0,2),(1,2): assenti
+  6.   SUD di (2,2): PRESENTE -> STOP -> non piazzetta
+
+Finestra (1,1) - celle (1,1)..(3,3):
+  1-4. SUD di (1,1),(2,1),(3,1),(1,2): assenti
+  5.   SUD di (2,2): PRESENTE -> STOP -> non piazzetta
+
+Risultato: nessuna piazzetta -> le 4 scorciatoie restano aperte.
+```
+
+Questo giro completo viene fatto dopo OGNI apertura andata a segno
+(4 volte, una per scorciatoia), sempre con la stessa risposta:
+nessuna piazzetta. Guarda la finestra (1,0): il ciclo 2x2 è tutto
+aperto, ma la finestra 3x3 che lo contiene comprende anche la cella
+(2,2), che ha ancora il muro EST chiuso: è quel muro che rende il
+ciclo legale. Un solo muro può salvare più finestre: il SUD di (2,2)
+blocca sia la (0,1) sia la (1,1).
 
 ### Il "42"
 
@@ -584,11 +827,107 @@ messaggio e il programma CONTINUA.
 
 ## 1.5 Il percorso più breve: BFS
 
-La BFS (Breadth-First Search) parte dall'entrata, visita tutti i vicini
-raggiungibili (distanza 1), poi i loro vicini (distanza 2), ecc. — come
-un'onda che si allarga. La prima volta che arriva all'uscita ha il
-percorso più breve. Il risultato è una lista di celle da entry a exit
-incluse: [(0,0), (1,0), (1,1), ...].
+### Cos'è
+
+La BFS è il PASSO 3 della mappa: quando parte, il labirinto è GIÀ
+finito (la talpa ha scavato tutto al passo 2). Il suo unico compito:
+trovare il percorso più corto dall'entrata all'uscita. Nel codice è
+la funzione solve().
+
+### L'idea: il fuoco sull'erba secca
+
+Il fuoco parte dall'entrata e si propaga di una cella al minuto, in
+TUTTE le direzioni contemporaneamente. Su ogni cella che raggiunge
+scrive il MINUTO in cui l'ha toccata. Il minuto scritto sull'uscita è
+la lunghezza della strada più corta.
+
+Nel 4x4 di sempre (numeri generati dal programma vero; il punto = le
+celle mai toccate, il fuoco si ferma appena tocca l'uscita):
+
+```
++---+---+---+---+
+| 0   1   2 | 5 |
++---+---+   +   +
+| .   . | 3   4 |
++   +   +---+   +
+| . | .   . | 5 |
++   +   +---+   +
+| . | .   .   6 |
++---+---+---+---+
+```
+
+### Come fa a sapere che è il più corto? Non lo scopre: lo costruisce
+
+Il fuoco avanza UN passo al minuto, ovunque: al minuto 0 brucia solo
+l'entrata; al minuto 1 tutte le celle a 1 passo; al minuto 2 tutte
+quelle a 2 passi... Una cella prende fuoco un minuto dopo la PRIMA
+delle sue vicine che brucia: non può prendere fuoco prima (prima non
+brucia nessuna sua vicina), e appena una vicina brucia, prende fuoco
+il minuto dopo. Quindi il minuto scritto su ogni cella è SEMPRE il
+minimo possibile: nessuna strada più corta poteva arrivarci prima.
+
+La catena di "chi ha acceso chi", dall'uscita all'indietro:
+
+```
+(3,3) acceso da (3,2) <- da (3,1) <- da (2,1) <- da (2,0) <- da (1,0) <- da (0,0)
+```
+
+Ogni passaggio scende di UN minuto esatto: 6, 5, 4, 3, 2, 1, 0. Il
+percorso, capovolto: (0,0),(1,0),(2,0),(2,1),(3,1),(3,2),(3,3) — 6
+passi. Se esistesse una strada da 5, il fuoco sarebbe arrivato
+all'uscita al minuto 5: impossibile, perché l'uscita ha due sole
+vicine, (3,2) (minuto 5) e (2,3) (che il fuoco non ha nemmeno fatto
+in tempo a toccare).
+
+### Come lo fa il programma
+
+Prima cosa: per ricostruire la strada alla fine, il programma tiene
+un QUADERNO: su ogni cella scrive CHI l'ha accesa. Finito il fuoco,
+parte dall'uscita, risale il quaderno ("chi ha acceso chi") fino
+all'entrata e capovolge la lista: è il percorso. Nel codice il
+quaderno è un dizionario chiamato came_from: un dizionario è la
+tabella chiave→valore già vista in 1.1, e qui la chiave è la cella,
+il valore è chi l'ha accesa (l'entrata ha scritto "nessuno").
+
+Seconda cosa: per far avanzare il fuoco minuto per minuto, il
+programma tiene una PILA DI FOGLI: ogni foglio è una cella toccata
+che deve ancora propagare il fuoco ai vicini. Quando una cella
+prende fuoco, il suo foglio viene messo in CIMA alla pila. Il
+programma prende sempre il foglio in FONDO, cioè il più vecchio:
+così le celle propagano il fuoco nell'ordine in cui sono state
+toccate — prima tutte quelle del minuto 1, poi quelle del minuto 2,
+e via. Prendere dal fondo si chiama FIFO: il primo foglio entrato è
+il primo che esce.
+
+(La talpa usava la stessa pila al contrario: prendeva la CIMA — LIFO,
+l'ultimo entrato è il primo che esce — ma solo per tornare indietro
+lungo la corda quando era bloccata, non per trovare strade corte.)
+
+Attenzione: il fuoco non è una cosa separata dalla pila — prendere
+sempre il foglio più vecchio È il fuoco. I minuti non si conoscono
+all'inizio: li scrive il programma cella per cella, e la pila presa
+dal fondo li fa uscire nell'ordine giusto (0, 1, 2...). Senza
+quell'ordine i minuti uscirebbero sbagliati e il percorso
+ricostruito sarebbe più lungo del necessario. Due pile, due mestieri:
+quella della talpa RICORDA la strada già fatta (per tornare
+indietro); quella della BFS PRODUCE i minuti nell'ordine giusto
+mentre calcola la strada corta.
+
+### Nel codice
+
+- la pila di fogli = una deque di collections ("via il foglio in
+  fondo" = popleft(), "foglio nuovo in cima" = append())
+- chi ha acceso chi = il dizionario came_from (l'entrata ha None)
+- i 4 lati = i 4 controlli con _has_wall (le monete)
+- la ricostruzione = il while che risale came_from e poi reverse
+
+**Frase pronta per l'evaluation:** "La BFS è come un fuoco che parte
+dall'entrata e brucia una cella al minuto in tutte le direzioni: ogni
+cella prende fuoco al minuto minimo possibile e annota chi l'ha
+accesa. Quando il fuoco tocca l'uscita, risalgo la catena di chi ha
+acceso chi fino all'entrata e la capovolgo: è il percorso più corto,
+perché il fuoco raggiunge ogni cella nel minor numero di passi
+possibile."
 
 ## 1.6 L'OUTPUT: il file esadecimale
 
@@ -626,6 +965,19 @@ NORMALI: il labirinto ci scava dentro e il percorso ci passa; i
 mattoncini restano isole chiuse, quindi 4 e 2 si leggono lo stesso).
 **Il muro esterno del labirinto è completamente chiuso**: entry ed
 exit sono celle marcate dentro il bordo, non aperture.
+
+### Perché il labirinto sembra alto e stretto?
+
+Il labirinto 20x15 è più LARGO che alto in celle (20 colonne, 15
+righe), ma a schermo sembra il contrario. Il motivo: i caratteri del
+terminale non sono quadrati — un carattere è circa 2 volte più ALTO
+che largo. Con 1 cella = 1 carattere, 20 caratteri in orizzontale
+occupano meno spazio visivo di 15 righe in verticale → il labirinto
+appare alto e stretto.
+
+Non è un bug: è l'effetto ottico della griglia di caratteri. Per
+farlo sembrare "sdraiato" basta aumentare WIDTH nel config (es.
+WIDTH=40 HEIGHT=15): nel codice non cambia nulla.
 
 ## 1.8 Il main e la gestione errori
 
