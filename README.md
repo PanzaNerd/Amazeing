@@ -90,9 +90,10 @@ constraint for free.
 For PERFECT=False, a few extra internal walls are carved after the perfect
 generation, each checked so that no open area wider than 2 cells appears.
 
-The "42" pattern is drawn with fully closed cells (all four walls), placed
-where it does not disconnect the maze, and omitted with a console error
-message when the maze is too small.
+The "42" pattern is drawn with fully closed cells (all four walls), centred
+with at least one fully free row above the digits, so the maze must be at
+least 9x6 cells for the pattern to fit without disconnecting the grid. It
+is omitted with a console error message when the maze is too small.
 
 ## Reusable part
 

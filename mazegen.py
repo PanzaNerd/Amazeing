@@ -151,22 +151,29 @@ class MazeGenerator:
 	def _carve_42(self, with_42: bool) -> None:
 		"""Disegna il pattern "42" come celle completamente chiuse.
 
-		Il pattern viene piazzato al centro della griglia. Le celle dei
-		mattoncini restano chiuse e vengono marcate come gia' visitate,
-		cosi' la generazione non le attraversa mai e le cifre restano
-		isole chiuse. Le celle vuote delle cifre invece sono normali: il
+		Il pattern viene piazzato al centro della griglia, ma sempre con
+		almeno una riga interamente libera SOPRA le cifre: il "buco" in
+		alto del 4 deve toccare celle libere, altrimenti resta sigillato
+		dai mattoncini e diventa un'area isolata. Le celle dei mattoncini
+		restano chiuse e vengono marcate come gia' visitate, cosi' la
+		generazione non le attraversa mai e le cifre restano isole
+		chiuse. Le celle vuote delle cifre invece sono normali: il
 		labirinto ci scava dentro e il percorso puo' passarci. Se il
-		labirinto e' troppo piccolo o il pattern coprirebbe entry/exit,
-		si salta e has_42 resta False.
+		labirinto e' troppo piccolo (sotto 9x6, perche' a 5 righe le
+		cifre occuperebbero tutta l'altezza spezzando il labirinto in
+		parti non collegate) o il pattern coprirebbe entry/exit, si
+		salta e has_42 resta False.
 		"""
 		self.forty_two = []
 		self.has_42 = False
 		if not with_42:
 			return
-		if self.width < 9 or self.height < 5:
+		if self.width < 9 or self.height < 6:
 			return
 		start_x = (self.width - 7) // 2
 		start_y = (self.height - 5) // 2
+		if start_y < 1:
+			start_y = 1
 		pattern: list[tuple[int, int]] = []
 		for dx, dy in FOUR:
 			pattern.append((start_x + dx, start_y + dy))
