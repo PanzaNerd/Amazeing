@@ -1728,6 +1728,14 @@ in automatico: il metodo ne legge width e height."
   1, 2, 4, 8. Ogni controllo ha DUE condizioni unite da and: 1) il
   vicino ESISTE (il bordo: y>0, x<width-1, y<height-1, x>0); 2) il
   vicino NON è visitato.
+- I 4 if sono INDIPENDENTI, non un if/elif: ogni cella passa SEMPRE
+  per tutti e quattro, in ordine, e ogni controllo risponde da solo.
+  Una cella può superarne 0, 1, 2, 3 o 4. Chi non ne supera nessuno ha
+  la lista vuota (= pop): è un caso LEGALE, il motore del
+  backtracking, non un errore. (Diverso da _junction e _parse_bool,
+  dove l'if/elif è a cascata e il primo vince.) Non si potrebbe usare
+  l'elif qui: il dado deve poter scegliere tra TUTTI i vicini
+  disponibili, e l'elif ne lascerebbe al massimo uno.
 - L'ORDINE è lo scudo: l'and si ferma al primo falso, quindi con y=0
   la seconda condizione non viene nemmeno letta. Se fossero invertite,
   Python leggerebbe visited[-1][x] = l'ULTIMA riga (gli indici
