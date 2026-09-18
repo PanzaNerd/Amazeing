@@ -1748,6 +1748,24 @@ in automatico: il metodo ne legge width e height."
   l'entrata (0, 0) è un ANGOLO e la generazione parte proprio da lì.
   La condizione del bordo non penalizza la cella: impedisce solo di
   guardare dove non c'è niente (in C: la stessa guardia y > 0).
+- La mappa delle direzioni disponibili (con nulla visitato): ANGOLI =
+  2, BORDI = 3, INTERNO = 4. Esempio reale 5x4 generato dal codice:
+
+```
+   0 1 2 3 4
+0:  2 3 3 3 2
+1:  3 4 4 4 3
+2:  3 4 4 4 3
+3:  2 3 3 3 2
+```
+
+- Le coordinate valide sono x da 0 a width-1 e y da 0 a height-1:
+  (width, 0) e (0, height) NON esistono. E la talpa non riceve mai
+  celle invalide: la prima è l'entry (già controllata da generate con
+  _in_bounds), tutte le altre sono vicini prodotti dalla funzione
+  stessa, che per costruzione sono sempre dentro i bordi. Il cerchio
+  si chiude: i controlli sul bordo garantiscono che la funzione
+  produca solo celle valide, quindi ne riceve solo di valide.
 - Lista vuota = talpa bloccata = il chiamante fa pop (il
   backtracking). Lista non vuota = il dado sceglie un pacchetto e
   _remove_wall toglie le due monete, una per lato.
