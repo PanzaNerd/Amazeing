@@ -1734,6 +1734,12 @@ in automatico: il metodo ne legge width e height."
   negativi sono VALIDI in Python!): cella sbagliata e nessun errore;
   in C sarebbe un segfault. Il bordo si controlla PRIMA proprio per
   questo.
+- ATTENZIONE: NON si escludono le celle di bordo! Da (1, 0) la talpa
+  guarda in TRE direzioni (manca solo il NORD, dove il vicino NON
+  ESISTE oltre il muro esterno). Le celle di bordo sono normali:
+  l'entrata (0, 0) è un ANGOLO e la generazione parte proprio da lì.
+  La condizione del bordo non penalizza la cella: impedisce solo di
+  guardare dove non c'è niente (in C: la stessa guardia y > 0).
 - Lista vuota = talpa bloccata = il chiamante fa pop (il
   backtracking). Lista non vuota = il dado sceglie un pacchetto e
   _remove_wall toglie le due monete, una per lato.
