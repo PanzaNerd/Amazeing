@@ -1681,6 +1681,32 @@ righe. La scrittura inverte apposta: il secondo pezzo della coppia (la
 y) diventa il primo indice. La riga marca l'entrata come già visitata
 prima che la talpa parta."
 
+### Approfondimento: quando si svuota la corda (la fine della generazione)
+
+- La corda cresce solo con APPEND (cella nuova) e cala solo con POP
+  (passo indietro). Il POP scatta solo quando la cella in cima non ha
+  vicini non visitati.
+- La corda arriva a 0 in UN solo modo: l'ultimo POP dall'ENTRATA
+  stessa — la talpa è tornata al punto di partenza e non c'è più
+  nessuna cella nuova da scavare da NESSUN punto del percorso.
+- In quel momento TUTTE le celle sono visitate (traccia reale 3x3,
+  seed 42: 9 celle visitate su 9; ultimo passo: POP da (0,0)).
+- Il momento arriva SEMPRE: le celle sono finite e ognuna entra nella
+  corda al massimo una volta (si appendono solo celle non visitate,
+  subito marcate). Quando la talpa non può più appendere, può solo
+  fare POP su POP, e l'ultimo POP possibile è dall'entrata.
+- In un labirinto grande salite e discese si alternano (la talpa si
+  blocca, torna indietro un pezzo, riparte da un altro buco), ma il
+  finale è sempre lo stesso.
+- La generazione NON finisce all'uscita: l'uscita non c'entra niente
+  con la talpa. Finisce quando la corda è vuota = tutte le celle
+  scavate.
+
+Risposta da evaluation: "Il while esce quando la corda è vuota:
+l'ultimo pop è dall'entrata stessa. Succede quando non esiste più
+nessuna cella non visitata: la generazione finisce quando TUTTE le
+celle sono scavate, non all'uscita."
+
 ### _carve_extra_walls (righe 238-275): il piccone (teoria 1.4 PERFECT=False)
 
 - `for _ in range(20):` — ★ PRIMA VOLTA il NOME USA-E-GETTA `_`: "la
