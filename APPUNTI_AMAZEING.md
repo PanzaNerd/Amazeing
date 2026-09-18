@@ -1650,6 +1650,34 @@ precedente."
   scavate (teoria: la generazione finisce quando tutte le celle sono
   visitate, NON all'uscita).
 
+### Approfondimento: la coppia (x, y) contro la griglia [y][x]
+
+- La COPPIA entry è (x, y): il PRIMO pezzo è la colonna (entry[0]), il
+  SECONDO è la riga (entry[1]). L'ordine viene dal subject: ENTRY=0,0
+  vuol dire colonna 0, riga 0.
+- La GRIGLIA invece è [y][x]: prima la RIGA, poi la colonna. Motivo:
+  la griglia è una LISTA DI RIGHE — il primo indice sceglie QUALE riga
+  (la y), il secondo sceglie la posizione DENTRO la riga (la x).
+- Due lingue diverse convivono: per tradurre la coppia in griglia si
+  INVERTE. visited[self.entry[1]][self.entry[0]] =
+  visited[y][x]. Con entry = (3, 1): visited[1][3] = riga 1, colonna
+  3. Scrivere visited[3][1] sarebbe la cella SBAGLIATA (riga 3,
+  colonna 1).
+- Cosa FA la riga: marca la cella di partenza come "già visitata"
+  PRIMA del while. Senza il segno, la talpa dalle celle vicine
+  vedrebbe l'entrata come una cella NUOVA e ci riscenderebbe dentro.
+  Lo stesso schema si ripete a ogni passo: visited[ny][nx] = True (nx
+  e ny sono anche loro in ordine (x, y): sempre coppia → griglia
+  invertita).
+- In C: visited è int visited[H][W], entry è una struct con x e y:
+  visited[entry.y][entry.x].
+
+Risposta da evaluation: "La coppia è in ordine (x, y) perché così la
+scrive l'utente nel config; la griglia è [y][x] perché è una lista di
+righe. La scrittura inverte apposta: il secondo pezzo della coppia (la
+y) diventa il primo indice. La riga marca l'entrata come già visitata
+prima che la talpa parta."
+
 ### _carve_extra_walls (righe 238-275): il piccone (teoria 1.4 PERFECT=False)
 
 - `for _ in range(20):` — ★ PRIMA VOLTA il NOME USA-E-GETTA `_`: "la
