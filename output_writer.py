@@ -12,6 +12,7 @@
 
 """Scrittura del labirinto nel file di output in formato esadecimale."""
 
+# la tabella numero -> cifra esadecimale (l'esadecimale vive solo nel file)
 HEX_DIGITS: str = "0123456789ABCDEF"
 
 
@@ -25,9 +26,11 @@ def path_to_nesw(path: list[tuple[int, int]]) -> str:
 		Stringa con una lettera N/E/S/W per ogni passo.
 	"""
 	result = ""
+	# i passi sono le celle MENO 1: 5 celle = 4 spostamenti
 	for i in range(len(path) - 1):
 		x1, y1 = path[i]
 		x2, y2 = path[i + 1]
+		# ogni passo confronta la cella con la successiva
 		if x2 == x1 + 1:
 			result = result + "E"
 		elif x2 == x1 - 1:
@@ -37,6 +40,7 @@ def path_to_nesw(path: list[tuple[int, int]]) -> str:
 		elif y2 == y1 + 1:
 			result = result + "S"
 		else:
+			# due celle non vicine: non dovrebbe mai succedere
 			raise ValueError("non-adjacent cells in path")
 	return result
 
@@ -57,13 +61,18 @@ def write_output_file(grid: list[list[int]], entry: tuple[int, int],
 		path: percorso piu' breve come lista di celle.
 		filename: nome del file da scrivere.
 	"""
+	# "w" = scrittura: il file esistente viene svuotato e riscritto
 	with open(filename, "w", encoding="utf-8") as f:
 		for row in grid:
 			line = ""
+			# ogni cella fa da INDICE sulla tabella: 15 diventa 'F'
 			for cell in row:
 				line = line + HEX_DIGITS[cell]
 			f.write(line + "\n")
+		# la riga vuota richiesta dal formato
 		f.write("\n")
+		# entrata e uscita: primo pezzo x, secondo pezzo y
 		f.write(f"{entry[0]},{entry[1]}\n")
 		f.write(f"{exit_[0]},{exit_[1]}\n")
+		# l'ultima riga: il percorso in lettere N, E, S, W
 		f.write(path_to_nesw(path) + "\n")

@@ -52,7 +52,7 @@ class Config:
 
 
 def _parse_int(raw: str, key: str) -> int:
-	"""Converte raw in intero o solleva ConfigError con messaggio chiaro."""
+	"""Converte la parola in numero (la atoi del C) o alza ConfigError."""
 	try:
 		return int(raw)
 	except ValueError:
@@ -98,24 +98,31 @@ def parse_config(path: str) -> Config:
 		ConfigError: chiave mancante o duplicata, valore non valido.
 		OSError: file inesistente o illeggibile (propaga al chiamante).
 	"""
+	# la scatola delle righe lette: chiave e valore ancora STRINGHE
 	values: dict[str, str] = {}
+	# lo schedario si apre in lettura: f e' il manico, il with lo richiude
 	with open(path, "r", encoding="utf-8") as f:
 		line_no = 0
 		for line in f:
 			line_no = line_no + 1
 			stripped = line.strip()
+			# riga vuota o commento: non conta
 			if stripped == "" or stripped.startswith("#"):
 				continue
+			# senza l'= non e' una KEY=VALUE: errore
 			if "=" not in stripped:
 				raise ConfigError(
 					f"line {line_no}: expected 'KEY=VALUE', got '{stripped}'")
+			# la riga si taglia al PRIMO "="
 			key, value = stripped.split("=", 1)
 			key = key.strip()
 			value = value.strip()
+			# doppione: ogni chiave deve comparire una volta sola
 			if key in values:
 				raise ConfigError(f"line {line_no}: duplicate key '{key}'")
 			values[key] = value
 
+	# il controllo delle chiavi obbligatorie mancanti
 	missing: list[str] = []
 	for key in REQUIRED_KEYS:
 		if key not in values:
@@ -123,6 +130,7 @@ def parse_config(path: str) -> Config:
 	if len(missing) > 0:
 		raise ConfigError("missing mandatory keys: " + ", ".join(missing))
 
+	# ora le parole diventano valori veri (le conversioni, nell'ordine)
 	width = _parse_int(values["WIDTH"], "WIDTH")
 	height = _parse_int(values["HEIGHT"], "HEIGHT")
 	if width < 2 or height < 2:
@@ -145,4 +153,5 @@ def parse_config(path: str) -> Config:
 	if "SEED" in values:
 		seed = _parse_int(values["SEED"], "SEED")
 
+	# la fabbrica della scatola Config: nasce qui e torna al main
 	return Config(width, height, entry, exit_, output_file, perfect, seed)

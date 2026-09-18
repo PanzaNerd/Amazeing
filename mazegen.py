@@ -134,6 +134,7 @@ class MazeGenerator:
 		if self.entry == self.exit:
 			raise ValueError("entry and exit must be different")
 
+		# ogni cella nasce come scatola chiusa: N+E+S+W = 15 (le monete 1.2)
 		self.grid = []
 		for y in range(self.height):
 			row: list[int] = []
@@ -143,6 +144,7 @@ class MazeGenerator:
 
 		# il muro esterno resta COMPLETAMENTE chiuso: entry ed exit sono
 		# celle marcate dentro il bordo, non aperture nel bordo
+		# i tre passi nell'ordine: il 42, la talpa, poi il piccone
 		self._carve_42(with_42)
 		self._carve_maze()
 		if not perfect:
@@ -186,12 +188,14 @@ class MazeGenerator:
 		self.has_42 = True
 
 	def _carve_maze(self) -> None:
-		"""Genera il labirinto perfetto (recursive backtracker iterativo).
+		"""La TALPA scava il labirinto perfetto (recursive backtracker).
 
-		Parte da entry, visita i vicini non ancora visitati togliendo il
-		muro tra le due celle (da entrambi i lati), e torna indietro
-		quando non ha piu' vicini disponibili.
+		Parte dall'entrata e apre i muri verso i vicini non ancora
+		scavati, togliendo la moneta da ENTRAMBI i lati. Quando non ha
+		piu' porte aperte torna indietro con la CORDA (lo stack), e
+		finisce quando la corda e' vuota: tutte le celle sono scavate.
 		"""
+		# il foglio dei segni "gia' scavato", tutto falso
 		visited: list[list[bool]] = []
 		for y in range(self.height):
 			row: list[bool] = []
@@ -199,50 +203,66 @@ class MazeGenerator:
 				row.append(False)
 			visited.append(row)
 
+		# i mattoncini del 42 sono cemento: la talpa non ci scava mai
 		for x, y in self.forty_two:
 			visited[y][x] = True
 
+		# la CORDA parte dall'entrata: la talpa e' li' e l'ha gia' scavata
 		stack: list[tuple[int, int]] = [self.entry]
 		visited[self.entry[1]][self.entry[0]] = True
 
 		while len(stack) > 0:
+			# la cima della corda: la talpa e' qui, senza togliere nulla
 			x, y = stack[len(stack) - 1]
 			neighbors = self._unvisited_neighbors(x, y, visited)
 			if len(neighbors) == 0:
+				# nessuna porta aperta: la talpa risale la corda
 				stack.pop()
 			else:
+				# il DADO sceglie una delle porte aperte
 				nx, ny, mask_here, mask_there = self.rng.choice(neighbors)
+				# il muro si apre dai due lati: le due monete speculari
 				self._remove_wall(x, y, mask_here)
 				self._remove_wall(nx, ny, mask_there)
+				# il vicino e' scavato: la talpa si sposta, la corda cresce
 				visited[ny][nx] = True
 				stack.append((nx, ny))
 
 	def _unvisited_neighbors(self, x: int, y: int,
 	                         visited: list[list[bool]]) -> list[tuple[int, int, int, int]]:
-		"""Vicini non ancora visitati di (x, y).
+		"""Le 4 porte della stanza dove sta la talpa, in ordine N, E, S, W.
 
-		Per ogni vicino restituisce anche la moneta del muro dal lato di
-		(x, y) e la moneta speculare dal lato del vicino.
+		Per ogni porta aperta (il vicino esiste e non e' ancora scavato)
+		restituisce il vicino con le due monete speculari del muro da
+		aprire: la mia e la sua. Il bordo si controlla PRIMA, cosi' la
+		griglia non viene mai letta fuori dai bordi.
 		"""
 		neighbors: list[tuple[int, int, int, int]] = []
+		# porta NORD: esiste la cella sopra? e non e' ancora scavata?
 		if y > 0 and not visited[y - 1][x]:
 			neighbors.append((x, y - 1, N, S))
+		# porta EST: esiste la cella a destra? e non e' ancora scavata?
 		if x < self.width - 1 and not visited[y][x + 1]:
 			neighbors.append((x + 1, y, E, W))
+		# porta SUD: esiste la cella sotto? e non e' ancora scavata?
 		if y < self.height - 1 and not visited[y + 1][x]:
 			neighbors.append((x, y + 1, S, N))
+		# porta OVEST: esiste la cella a sinistra? e non e' ancora scavata?
 		if x > 0 and not visited[y][x - 1]:
 			neighbors.append((x - 1, y, W, E))
 		return neighbors
 
 	def _carve_extra_walls(self) -> None:
-		"""Apre muri interni extra per creare cicli (labirinto non perfetto).
+		"""Il PICCONE: apre scorciatoie a caso (labirinto non perfetto).
 
-		Ogni apertura viene controllata: non deve creare un'area aperta
-		3x3 (corridoi larghi al massimo 2 celle), e non deve toccare il
-		pattern "42".
+		Venti colpi, ognuno con tre dadi (colonna, riga, direzione). Il
+		colpo a vuoto (bordo, mattoncino del 42 o muro gia' aperto) non
+		conta, e se il colpo crea una piazzetta 3x3 viene annullato:
+		i corridoi restano larghi al massimo 2 celle.
 		"""
+		# i 20 colpi di piccone
 		for _ in range(20):
+			# tre dadi: colonna, riga e direzione del colpo
 			x = self.rng.randrange(self.width)
 			y = self.rng.randrange(self.height)
 			mask = self.rng.choice([N, E, S, W])
@@ -263,19 +283,24 @@ class MazeGenerator:
 				nx = x - 1
 				mask_there = E
 			else:
+				# colpo a vuoto: si e' mirato al bordo esterno
 				continue
+			# mai aprire i mattoncini del 42: sono isole chiuse
 			if (x, y) in self.forty_two or (nx, ny) in self.forty_two:
 				continue
+			# il muro e' gia' aperto: colpo a vuoto
 			if not self._has_wall(x, y, mask_here):
 				continue
+			# il colpo apre il muro dai due lati...
 			self._remove_wall(x, y, mask_here)
 			self._remove_wall(nx, ny, mask_there)
+			# ...ma se nasce una piazzetta 3x3 si richiude: colpo annullato
 			if self._has_3x3_open():
 				self._add_wall(x, y, mask_here)
 				self._add_wall(nx, ny, mask_there)
 
 	def _has_3x3_open(self) -> bool:
-		"""True se esiste una zona aperta di 3x3 celle (12 muri interni aperti)."""
+		"""True se esiste una piazzetta 3x3 tutta aperta (vietata: corridoi max 2 celle)."""
 		for y in range(self.height - 2):
 			for x in range(self.width - 2):
 				if self._window_3x3_open(x, y):
@@ -295,21 +320,27 @@ class MazeGenerator:
 		return True
 
 	def solve(self) -> list[tuple[int, int]]:
-		"""Trova il percorso piu' breve da entry a exit (BFS).
+		"""Il FUOCO sull'erba secca (BFS): trova il percorso piu' breve.
 
-		Returns:
-			Lista di celle da entry a exit incluse, o lista vuota se
-			l'uscita non e' raggiungibile.
+		Ogni cella prende fuoco al suo minuto minimo possibile: i fogli
+		della coda si leggono dal FONDO (FIFO). Quando l'uscita brucia,
+		risalendo la catena di "chi ha acceso chi" si ottiene il percorso
+		piu' corto, o la lista vuota se l'uscita non brucia mai.
 		"""
+		# la pila di fogli presa dal FONDO (FIFO): e' il fuoco che avanza
 		queue: deque[tuple[int, int]] = deque()
 		queue.append(self.entry)
+		# il registro di "chi ha acceso chi": l'entrata non brucia da nessuno
 		came_from: dict[tuple[int, int], tuple[int, int] | None] = {}
 		came_from[self.entry] = None
 
 		while len(queue) > 0:
+			# il foglio piu' vecchio: questa cella prende fuoco adesso
 			x, y = queue.popleft()
+			# l'uscita ha preso fuoco: tutti i minuti sono al minimo
 			if (x, y) == self.exit:
 				break
+			# il fuoco prova le 4 direzioni, solo dove il muro e' aperto
 			if y > 0 and not self._has_wall(x, y, N):
 				self._add_neighbor(queue, came_from, x, y - 1, x, y)
 			if x < self.width - 1 and not self._has_wall(x, y, E):
@@ -319,21 +350,29 @@ class MazeGenerator:
 			if x > 0 and not self._has_wall(x, y, W):
 				self._add_neighbor(queue, came_from, x - 1, y, x, y)
 
+		# l'uscita non ha mai preso fuoco: nessun percorso
 		if self.exit not in came_from:
 			return []
 
+		# la RISALITA: dall'uscita si segue "chi ha acceso chi" fino
+		# all'entrata (che non e' stata accesa da nessuno)...
 		path: list[tuple[int, int]] = []
 		cell: tuple[int, int] | None = self.exit
 		while cell is not None:
 			path.append(cell)
 			cell = came_from[cell]
+		# ...poi si capovolge: entrata -> uscita
 		path.reverse()
 		return path
 
 	def _add_neighbor(self, queue: deque[tuple[int, int]],
 	                  came_from: dict[tuple[int, int], tuple[int, int] | None],
 	                  nx: int, ny: int, x: int, y: int) -> None:
-		"""Aggiunge il vicino (nx, ny) alla coda se non e' mai stato visto."""
+		"""Accende il vicino (nx, ny) se non ha mai preso fuoco.
+
+		Segna chi l'ha acceso (came_from) e lo mette in fondo alla coda:
+		brucera' al minuto successivo.
+		"""
 		if (nx, ny) not in came_from:
 			came_from[(nx, ny)] = (x, y)
 			queue.append((nx, ny))

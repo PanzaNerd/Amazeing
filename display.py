@@ -47,6 +47,7 @@ def run(gen: MazeGenerator) -> None:
 	"""
 	show_path = False
 	color_index = 0
+	# il giro infinito del menu: si esce solo con 'q'
 	while True:
 		print(CLEAR)
 		print("===== A-MAZE-ING =====")
@@ -59,14 +60,18 @@ def run(gen: MazeGenerator) -> None:
 		print("| 3) Change wall colour                |")
 		print("| q) Quit                              |")
 		print("+--------------------------------------+")
+		# input si ferma e aspetta la scrittura dell'utente (la scanf)
 		cmd = input("Choice > ").strip().lower()
 		if cmd == "1":
+			# rigenera: il dado prosegue la sequenza, labirinto nuovo
 			gen.generate(perfect=gen.perfect, entry=gen.entry,
 			             exit=gen.exit, with_42=True)
 			show_path = False
 		elif cmd == "2":
+			# not = il rovescio: accendi/spegni il percorso
 			show_path = not show_path
 		elif cmd == "3":
+			# il RESTO fa girare la giostra dei colori: 0,1,2,3,0...
 			color_index = (color_index + 1) % len(WALL_COLORS)
 		elif cmd == "q":
 			break
@@ -84,8 +89,10 @@ def _print_maze(gen: MazeGenerator, show_path: bool, wall_color: str,
 	"""
 	path: list[tuple[int, int]] = []
 	if show_path:
+		# se richiesto, il fuoco ricalcola il percorso solo per disegnarlo
 		path = gen.solve()
 
+	# i muri attraversati dal percorso: li' andra' il puntino verde
 	path_n: list[tuple[int, int]] = []
 	path_w: list[tuple[int, int]] = []
 	for i in range(len(path) - 1):
@@ -151,10 +158,12 @@ def _print_maze(gen: MazeGenerator, show_path: bool, wall_color: str,
 def _junction(gen: MazeGenerator, x: int, y: int) -> str:
 	"""Carattere del nodo della griglia alla colonna x della linea di muro y.
 
-	Guarda se dal nodo partono muri verso sinistra, destra, sopra e
-	sotto e sceglie il glifo giusto ('┼', '┬', '┴', '├', '┤', '┌',
-	'┐', '└', '┘', '─', '│'). Per la linea di fondo (y == height)
-	guarda i muri S dell'ultima riga.
+	Come un incrocio stradale: guarda se dal nodo partono muri verso
+	sinistra, destra, sopra e sotto e sceglie il cartello giusto
+	('┼', '┬', '┴', '├', '┤', '┌', '┐', '└', '┘', '─', '│'). La
+	cascata di if va dal caso piu' pieno al piu' vuoto: il PRIMO che
+	combacia vince. Per la linea di fondo (y == height) guarda i muri
+	S dell'ultima riga.
 	"""
 	if y < gen.height:
 		left = x > 0 and (gen.grid[y][x - 1] & N) != 0
