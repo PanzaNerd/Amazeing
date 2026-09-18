@@ -1664,8 +1664,11 @@ precedente."
   3. Scrivere visited[3][1] sarebbe la cella SBAGLIATA (riga 3,
   colonna 1).
 - Cosa FA la riga: marca la cella di partenza come "già visitata"
-  PRIMA del while. Senza il segno, la talpa dalle celle vicine
-  vedrebbe l'entrata come una cella NUOVA e ci riscenderebbe dentro.
+  PRIMA del while. La talpa parte IN PIEDI sull'entrata (la corda
+  inizia proprio da lì, stack = [self.entry]): esserci significa averla
+  già visitata automaticamente, e la riga è il REGISTRO ufficiale di
+  questo fatto. Senza il segno, la talpa dalle celle vicine vedrebbe
+  l'entrata come una cella NUOVA e ci riscenderebbe dentro.
   Lo stesso schema si ripete a ogni passo: visited[ny][nx] = True (nx
   e ny sono anche loro in ordine (x, y): sempre coppia → griglia
   invertita).
