@@ -1716,6 +1716,38 @@ _unvisited_neighbors: il filtro l'ha già fatto il metodo, ripetere il
 nome sarebbe ridondante. self è l'oggetto stesso, passato da Python
 in automatico: il metodo ne legge width e height."
 
+### Approfondimento: _unvisited_neighbors — il giro dei 4 controlli
+
+- La domanda a cui risponde: "da qui, in quali celle posso ancora
+  scavare?" NON scava e NON sceglie: fa solo l'ELENCO (la scelta la
+  farà dopo il dado, rng.choice).
+- Il risultato: una lista di PACCHETTI DA 4: (nx, ny, la mia moneta,
+  la sua moneta). Le due monete sono lo STESSO muro visto dai due lati
+  (la coerenza del subject); le coppie speculari sono N<->S e E<->W.
+- I 4 controlli in ordine N, E, S, W — lo stesso ordine delle monete
+  1, 2, 4, 8. Ogni controllo ha DUE condizioni unite da and: 1) il
+  vicino ESISTE (il bordo: y>0, x<width-1, y<height-1, x>0); 2) il
+  vicino NON è visitato.
+- L'ORDINE è lo scudo: l'and si ferma al primo falso, quindi con y=0
+  la seconda condizione non viene nemmeno letta. Se fossero invertite,
+  Python leggerebbe visited[-1][x] = l'ULTIMA riga (gli indici
+  negativi sono VALIDI in Python!): cella sbagliata e nessun errore;
+  in C sarebbe un segfault. Il bordo si controlla PRIMA proprio per
+  questo.
+- Lista vuota = talpa bloccata = il chiamante fa pop (il
+  backtracking). Lista non vuota = il dado sceglie un pacchetto e
+  _remove_wall toglie le due monete, una per lato.
+- Perché una funzione a parte: isola una domanda ben precisa e lascia
+  _carve_maze leggibile.
+- In C: una funzione helper che riempie un array di struct e
+  restituisce quanti vicini ha trovato; l'&& corto-circuita uguale.
+
+Risposta da evaluation: "Guarda i 4 lati in ordine N/E/S/W: per ogni
+lato controlla PRIMA che la cella esista (bordo) e POI che non sia
+visitata — l'ordine protegge la griglia dagli indici fuori bordo. Per
+ogni vicino valido impacchetta le coordinate con le due monete
+speculari. Lista vuota = bloccata → pop."
+
 ### Approfondimento: quando si svuota la corda (la fine della generazione)
 
 - La corda cresce solo con APPEND (cella nuova) e cala solo con POP
