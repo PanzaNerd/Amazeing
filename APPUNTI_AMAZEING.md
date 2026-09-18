@@ -1736,6 +1736,23 @@ in automatico: il metodo ne legge width e height."
   dove l'if/elif è a cascata e il primo vince.) Non si potrebbe usare
   l'elif qui: il dado deve poter scegliere tra TUTTI i vicini
   disponibili, e l'elif ne lascerebbe al massimo uno.
+- Gli if sono DOMANDE, non porte da attraversare: la talpa sta FERMA
+  nella sua stanza, prova le 4 porte in fila e si segna solo quelle
+  aperte. Il pallino esegue SEMPRE tutti e quattro gli if; quando la
+  condizione è falsa salta SOLO il corpo (la riga dell'append), mai la
+  funzione. L'attraversamento vero della porta succede DOPO, nel while
+  di _carve_maze, quando il dado sceglie un pacchetto dalla lista.
+
+  Traccia di (2,0) in un 5x4 (niente visitato):
+
+| Riga del codice | Domanda | Risposta | Cosa succede |
+|---|---|---|---|
+| neighbors = [] | — | — | la lista nasce vuota |
+| if NORD | esiste la cella sopra? | NO (y=0) | append saltato, riga dopo |
+| if EST | esiste a destra? e non visitata? | SI | append (3,0): lista = 1 |
+| if SUD | esiste sotto? e non visitata? | SI | append (2,1): lista = 2 |
+| if OVEST | esiste a sinistra? e non visitata? | SI | append (1,0): lista = 3 |
+| return | — | — | consegna 3 pacchetti |
 - L'ORDINE è lo scudo: l'and si ferma al primo falso, quindi con y=0
   la seconda condizione non viene nemmeno letta. Se fossero invertite,
   Python leggerebbe visited[-1][x] = l'ULTIMA riga (gli indici
