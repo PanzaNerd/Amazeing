@@ -1681,6 +1681,41 @@ righe. La scrittura inverte apposta: il secondo pezzo della coppia (la
 y) diventa il primo indice. La riga marca l'entrata come già visitata
 prima che la talpa parta."
 
+### Approfondimento: la cima della corda, il nome neighbors e il self
+
+- `x, y = stack[len(stack) - 1]` — con 5 elementi gli indici sono
+  0-4: len-1 è l'indice dell'ULTIMO elemento, la CIMA della corda, la
+  cella dove sta la talpa adesso. L'elemento è una coppia e lo
+  SPACCHETTAMENTO la apre in x e y. La riga GUARDA soltanto: nessun
+  pop. In C: stack[top].x, stack[top].y.
+- Perché la variabile si chiama neighbors e non unvisited_neighbors:
+  il filtraggio lo ha già fatto il METODO (è il suo nome a
+  garantirlo). La variabile è il soprannome corto per uso interno;
+  ripetere il nome intero sarebbe ridondante, e ogni uso successivo
+  (len, choice) più verboso senza aggiungere nulla. Il nome lungo sta
+  sull'etichetta (il metodo, usato anche da fuori); dentro il loop
+  "neighbors" significa già "i vicini disponibili". I nomi non
+  cambiano il comportamento: servono a chi legge, non a Python.
+- Il self — il pronome "io": _unvisited_neighbors è un metodo
+  dell'oggetto, e per chiamarlo si dice di QUALE oggetto
+  (self._unvisited_neighbors = "il MIO metodo"). Dentro di lui si
+  leggono self.width e self.height: senza self non saprebbe di quale
+  labirinto controllare i bordi. Python passa l'oggetto da solo come
+  primo argomento invisibile che atterra in self: non si scrive mai
+  nella chiamata. In C: unvisited_neighbors(gen, x, y, visited) con la
+  struct passata a mano.
+- Perché visited NON è dentro self: è il foglio di lavoro di QUESTA
+  generazione (nasce e muore in _carve_maze). Self porta le cose
+  PERMANENTI dell'oggetto (griglia, misure, dadi); le cose temporanee
+  di un singolo lavoro si passano come parametri normali.
+
+Risposta da evaluation: "La talpa è sempre sulla cima della corda:
+stack[len(stack)-1] è l'ultimo elemento, spacchettato in x e y, e si
+guarda senza togliere nulla. neighbors riceve il risultato di
+_unvisited_neighbors: il filtro l'ha già fatto il metodo, ripetere il
+nome sarebbe ridondante. self è l'oggetto stesso, passato da Python
+in automatico: il metodo ne legge width e height."
+
 ### Approfondimento: quando si svuota la corda (la fine della generazione)
 
 - La corda cresce solo con APPEND (cella nuova) e cala solo con POP
