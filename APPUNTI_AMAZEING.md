@@ -1585,6 +1585,38 @@ scattare la fabbrica:
   tocca nessun muro: i mattoncini verranno marcati "visitati" in
   _carve_maze.
 
+### Approfondimento: with_42 e has_42 — la richiesta e il risultato
+
+Due booleani con due mestieri diversi (analogia del ristorante):
+
+- **with_42 = la RICHIESTA** ("voglio il 42?"). È un parametro di
+  generate, col default True: il main non lo scrive nemmeno, il display
+  lo passa esplicitamente col menu 1. NON è un "permesso di accesso":
+  generate chiama _carve_42 SEMPRE, e la decisione sta DENTRO di lei,
+  come primissima riga (if not with_42: return).
+- **has_42 = il RISULTATO** ("questo labirinto HA davvero il 42?"). È
+  un campo dell'oggetto letto DOPO la generazione: il main lo usa per
+  decidere se stampare il messaggio di omissione, i test per la soglia
+  9x6.
+
+Volere non è ottenere: la richiesta può fallire per 3 motivi (nessuna
+richiesta, labirinto troppo piccolo, il disegno coprirebbe entry o
+exit). has_42 parte PESSIMISTA (False) e diventa True SOLO all'ultima
+riga di _carve_42, quando il disegno è stato davvero piazzato: ogni
+return anticipato lascia il False.
+
+Perché azzerarlo a OGNI generazione: generate può essere richiamata
+sullo STESSO oggetto (il menu 1 del display). Il True di ieri sarebbe
+lo scontrino vecchio in tasca: senza l'azzeramento, il main non
+stamperebbe il messaggio anche se il labirinto nuovo non ha il 42.
+Ogni generazione riparte da zero e racconta solo se stessa.
+
+Risposta da evaluation: "with_42 è la richiesta di disegnare il 42,
+has_42 è il resoconto onesto di cosa è successo davvero: il main
+stampa il messaggio di omissione solo se il 42 non c'è, e ogni
+generazione riparte da False per non ereditare il risultato della
+precedente."
+
 ### _carve_maze (righe 188-218): la talpa (teoria 1.4, le 3 regole)
 
 - visited: la griglia dei segni "già visto", tutta False (i valori di
@@ -1958,3 +1990,5 @@ lato ha un muro → spazio.
 - **break/continue:** escono dal ciclo / saltano al giro successivo
 - **codici ANSI:** ordini invisibili al terminale (colori, pulizia dello schermo)
 - **input():** funzione predefinita: aspetta la scrittura dell'utente e la restituisce
+- **with_42:** la RICHIESTA di disegnare il 42 (parametro di generate, default True)
+- **has_42:** il RISULTATO ("il 42 c'è davvero?") — campo dell'oggetto letto dal main per il messaggio di omissione
