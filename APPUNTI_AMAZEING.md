@@ -1716,6 +1716,44 @@ _unvisited_neighbors: il filtro l'ha già fatto il metodo, ripetere il
 nome sarebbe ridondante. self è l'oggetto stesso, passato da Python
 in automatico: il metodo ne legge width e height."
 
+### Approfondimento: il dado e il pacchetto da 4 (rng.choice)
+
+La riga: nx, ny, mask_here, mask_there = self.rng.choice(neighbors).
+
+Come si legge ad alta voce: "il dado della talpa pesca un pacchetto a
+caso dalla lista delle porte aperte; il pacchetto si apre e i suoi 4
+pezzi finiscono in nx, ny, mask_here e mask_there".
+
+Tre cose in una:
+
+| Pezzo della riga | Cosa fa |
+|---|---|
+| self.rng | il DADO della talpa: la macchinetta col seme (il librone 1.3) |
+| .choice(neighbors) | pesca UN pacchetto a caso dalla lista |
+| nx, ny, mask_here, mask_there = | il pacchetto si apre: 4 pezzi in 4 variabili (lo spacchettamento del 3.2, ma con 4) |
+
+- Il dado pesca un PACCHETTO e non una direzione: ogni elemento della
+  lista contiene gia' tutto cio' che serve — dove andare (nx, ny) e le
+  due monete speculari del muro (la mia e la sua). Scelta e
+  conseguenze viaggiano insieme.
+- Le due righe dopo usano esattamente i 4 pezzi: _remove_wall dal mio
+  lato con mask_here e dal lato del vicino con mask_there (stesso
+  muro, due lati, monete speculari).
+- Lo scudo: choice([]) sarebbe un crash, ma il dado vive solo nel ramo
+  else, raggiunto esclusivamente con lista NON vuota (il controllo
+  len(neighbors) == 0 fa il pop prima).
+- Le facce del dado = il numero di pacchetti in lista: con 3 porte
+  aperte 3 facce, con 1 porta 1 faccia (nessuna scelta vera, ma
+  funziona). Stesso seme -> stesso pescaggio (la riproducibilita' del
+  1.3 in azione).
+- In C: int i = rand() % n; poi i campi dall'array di struct. choice
+  fa entrambe le cose in una.
+
+Risposta da evaluation: "choice pesca a caso uno dei pacchetti da 4
+(destinazione + le due monete speculari) e lo spacchetta nelle quattro
+variabili; il dado non vede mai la lista vuota perche' il ramo del pop
+la intercetta prima."
+
 ### Approfondimento: _unvisited_neighbors — il giro dei 4 controlli
 
 - La domanda a cui risponde: "da qui, in quali celle posso ancora
