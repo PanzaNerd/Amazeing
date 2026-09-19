@@ -1792,6 +1792,39 @@ Random creata in __init__ col seme. randrange e choice sono i SUOI
 metodi. Ogni generatore ha il suo dado personale: stesso seme, stesso
 labirinto — mentre in C srand è globale."
 
+### Approfondimento: la piazzetta 3x3 — _has_3x3_open e _window_3x3_open
+
+- Lettura ad alta voce: _window_3x3_open(x, y) = "la finestra 3x3 il
+  cui angolo in alto a sinistra è (x, y) è tutta aperta?";
+  _has_3x3_open = "esiste ALMENO UNA finestra tutta aperta, da
+  qualsiasi parte?".
+- La finestra ha 9 celle; contano solo i 12 muri INTERNI: 6
+  orizzontali (i muri SUD delle celle delle prime DUE righe: tra riga
+  1-2 e 2-3) + 6 verticali (i muri EST delle celle delle prime DUE
+  colonne: tra colonna 1-2 e 2-3). Il perimetro della finestra non si
+  guarda mai: la piazzetta si giudica da dentro.
+- Il giro: primo loop per le righe y..y+1 e le colonne x..x+2 ->
+  muro SUD; secondo loop per le righe y..y+2 e le colonne x..x+1 ->
+  muro EST. Al PRIMO muro chiuso -> return False subito (basta un
+  muro per non essere una piazzetta: i controlli dopo non si fanno).
+  Tutti e 12 aperti -> return True.
+- Le finestre possibili: l'angolo (x, y) può stare da 0 a width-3 e
+  height-3, cioè i for vanno fino a width-2 e height-2 (range conta
+  fino a n-1). Un 5x5 ha 9 finestre (angoli 0,1,2 x 0,1,2); un 20x15
+  ne ha 18 x 13 = 234. _has_3x3_open si ferma alla PRIMA aperta
+  (return True) e solo alla fine risponde False.
+- Dove serve: il piccone la chiama DOPO ogni colpo; se il colpo ha
+  creato una piazzetta si richiudono i due lati (colpo annullato). Sul
+  labirinto vero (20x15, PERFECT=False) risponde False: la garanzia
+  "corridoi max 2 celle" è mantenuta.
+- In C: due for annidati identici su un array di bool.
+
+Risposta da evaluation: "_window_3x3_open controlla i 12 muri interni
+(6 orizzontali + 6 verticali) e basta un muro chiuso per rispondere
+False. _has_3x3_open scorre tutte le finestre possibili e si ferma
+alla prima aperta. Il piccone lo usa per annullare i colpi che
+creerebbero corridoi larghi 3."
+
 ### Approfondimento: _unvisited_neighbors — il giro dei 4 controlli
 
 - La domanda a cui risponde: "da qui, in quali celle posso ancora
