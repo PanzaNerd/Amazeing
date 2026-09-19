@@ -1754,6 +1754,44 @@ Risposta da evaluation: "choice pesca a caso uno dei pacchetti da 4
 variabili; il dado non vede mai la lista vuota perche' il ramo del pop
 la intercetta prima."
 
+### Approfondimento: self.rng — il dado PERSONALE (un oggetto, non una funzione)
+
+- self.rng NON è una funzione importata: è un CAMPO dell'oggetto, come
+  self.width. Dentro c'è un OGGETTO: la macchinetta dei dadi. Nasce in
+  __init__: self.rng = random.Random(seed). Tre nomi diversi: random
+  (minuscolo) = il MODULO importato (il cassetto dei dadi); Random
+  (maiuscolo) = la CLASSE delle macchinette; Random(seed) = la
+  FABBRICA che crea una macchinetta che parte dalla pagina del seme
+  (il librone 1.3).
+- Lettura ad alta voce di self.rng.randrange(self.width): "il MIO
+  dado: dammi un numero a caso da 0 a larghezza-meno-1".
+
+| Pezzo | Cos'è |
+|---|---|
+| self | l'oggetto (la talpa/piccone) |
+| .rng | il MIO dado: campo creato in __init__ |
+| .randrange(self.width) | il comando al dado: numero da 0 a width-1 |
+
+- randrange(n) tira un numero da 0 a n-1 (lo stesso conto di range):
+  con width=20 esce 0..19, ESATTAMENTE gli indici validi delle
+  colonne. choice([N, E, S, W]) pesca una delle 4 monete.
+- Perché un dado PERSONALE e non le funzioni globali di random: il
+  dado globale (random.randrange, senza oggetto) ignora il nostro
+  seed e ha uno stato condiviso da tutto il programma. Il dado
+  personale invece garantisce la riproducibilita' (stesso seed ->
+  stessa sequenza) e i generatori non si disturbano a vicenda. In C:
+  srand(seed) è globale, un dado solo per tutto il programma; qui
+  ogni oggetto porta il proprio.
+- Lo STESSO dado fa tutta la generazione: la talpa (choice sui
+  vicini) e il piccone (randrange e choice) leggono la stessa
+  sequenza, un lancio dopo l'altro: per questo l'intero labirinto è
+  riproducibile, non solo un pezzo.
+
+Risposta da evaluation: "rng è un campo dell'oggetto: una macchinetta
+Random creata in __init__ col seme. randrange e choice sono i SUOI
+metodi. Ogni generatore ha il suo dado personale: stesso seme, stesso
+labirinto — mentre in C srand è globale."
+
 ### Approfondimento: _unvisited_neighbors — il giro dei 4 controlli
 
 - La domanda a cui risponde: "da qui, in quali celle posso ancora
