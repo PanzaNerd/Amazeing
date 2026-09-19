@@ -2026,6 +2026,41 @@ una fila FIFO che contiene l'entrata come primo foglio. came_from è
 il registro di chi ha acceso chi, e l'entrata ha None: punto di
 partenza della catena e capolinea della risalita."
 
+### Approfondimento: la traccia completa — da queue e came_from vuoti al path
+
+Mappa dell'esempio (3x3 col bivio): ramo basso
+(0,0)-(1,0)-(2,0)-(2,1)-(2,2) = uscita; ramo sinistro
+(0,0)-(0,1)-(0,2) = vicolo cieco.
+
+- STADIO 0 (le 4 righe): queue = [(0,0)]; came_from = {(0,0): None}.
+- GIRO 1: brucia (0,0) al minuto 0 e accende i DUE vicini del bivio:
+  queue = [(1,0), (0,1)]; registro: (1,0) e (0,1) accese da (0,0).
+- GIRO 2: popleft serve (1,0) — il primo della fila (FIFO). Accende
+  (2,0); prova anche (0,0) ma è GIÀ nel registro → rifiutata. queue =
+  [(0,1), (2,0)].
+- GIRO 3: serve (0,1). Accende (0,2); (0,0) rifiutata. queue =
+  [(2,0), (0,2)].
+- GIRO 4: serve (2,0). Accende (2,1); (1,0) rifiutata. queue =
+  [(0,2), (2,1)].
+- GIRO 5: serve (0,2). Niente di nuovo: il ramo sinistro è un vicolo
+  cieco. queue = [(2,1)].
+- GIRO 6: serve (2,1). Accende (2,2), l'uscita. queue = [(2,2)].
+- GIRO 7: popleft = (2,2) = uscita → break.
+- La RISALITA: path cresce ALL'INDIETRO: (2,2) → (2,1) → (2,0) →
+  (1,0) → (0,0) → None ferma il while. reverse →
+  (0,0),(1,0),(2,0),(2,1),(2,2): il percorso più corto.
+- Nota chiave: (0,1) e (0,2) stanno nel registro ma NON nel percorso:
+  la risalita segue la catena SOLO dall'uscita, e il ramo morto non
+  porta all'uscita. E ogni cella provata da un vicino ma GIÀ nel
+  registro viene rifiutata: per questo ogni cella brucia una volta
+  sola.
+
+Risposta da evaluation: "queue si riempie con i vicini appena accesi
+e si serve dal davanti (i minuti in ordine); came_from registra chi
+ha acceso chi e le celle già accese non rientrano. Il path si
+costruisce risalendo il registro dall'uscita fino al None
+dell'entrata, poi si capovolge."
+
 ### solve (righe 297-331): il fuoco (teoria 1.5) — tappa C del main
 
 - `queue = deque()` — ★ PRIMA VOLTA `deque`: la LISTA D'ATTESA delle
