@@ -1819,6 +1819,30 @@ labirinto — mentre in C srand è globale."
   "corridoi max 2 celle" è mantenuta.
 - In C: due for annidati identici su un array di bool.
 
+### Il codice giro per giro (i for e il range)
+
+- range(a, b) produce a, a+1, ..., b-1: il secondo numero è ESCLUSO.
+  Per questo range(y, y+2) dà ESATTAMENTE 2 valori (y, y+1) e
+  range(x, x+3) dà ESATTAMENTE 3 (x, x+1, x+2): il +2 e il +3 sono il
+  CONTO dei giri, non l'ultimo valore. range(height-2) = 0 fino a
+  height-3: l'ultimo angolo valido, perché l'ultima cella della
+  finestra (y+2) deve stare dentro la griglia.
+- I due for ANNIDATI girano come il contachilometri: il for interno
+  completa TUTTI i suoi giri, poi l'esterno avanza di uno e l'interno
+  ricomincia da capo. In C: for (int wy = y; wy < y+2; wy++) {
+  for (int wx = x; wx < x+3; wx++) ... }.
+- Traccia di _window_3x3_open(1, 1). Primo doppio for (muri SUD), 6
+  giri nell'ordine: (1,1), (2,1), (3,1) con wy=1, poi (1,2), (2,2),
+  (3,2) con wy=2. Secondo doppio for (muri EST), 6 giri: (1,1), (2,1)
+  con wy=1; (1,2), (2,2) con wy=2; (1,3), (2,3) con wy=3 — solo 2
+  colonne per giro, perché range(x, x+2).
+- Il return DENTRO il for esce da TUTTA la funzione (i for si fermano
+  subito). Il return DOPO i for (il return False di _has_3x3_open) si
+  raggiunge SOLO se nessuna finestra era aperta.
+- Traccia di _has_3x3_open su un 5x5 (9 finestre, ordine di
+  scansione): (0,0) no → (1,0) no → (2,0) no → (0,1) no → (1,1)
+  APERTA → return True: le 4 finestre rimaste non vengono provate.
+
 Risposta da evaluation: "_window_3x3_open controlla i 12 muri interni
 (6 orizzontali + 6 verticali) e basta un muro chiuso per rispondere
 False. _has_3x3_open scorre tutte le finestre possibili e si ferma
