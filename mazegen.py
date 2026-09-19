@@ -322,12 +322,13 @@ class MazeGenerator:
 	def solve(self) -> list[tuple[int, int]]:
 		"""Il FUOCO sull'erba secca (BFS): trova il percorso piu' breve.
 
-		Ogni cella prende fuoco al suo minuto minimo possibile: i fogli
-		della coda si leggono dal FONDO (FIFO). Quando l'uscita brucia,
-		risalendo la catena di "chi ha acceso chi" si ottiene il percorso
-		piu' corto, o la lista vuota se l'uscita non brucia mai.
+		Ogni cella prende fuoco al suo minuto minimo possibile: la coda
+		si serve dal davanti (FIFO). Quando l'uscita brucia, risalendo
+		la catena di "chi ha acceso chi" si ottiene il percorso piu'
+		corto, o la lista vuota se l'uscita non brucia mai.
 		"""
-		# la pila di fogli presa dal FONDO (FIFO): e' il fuoco che avanza
+		# la LISTA D'ATTESA delle celle da accendere (FIFO: primo arrivato,
+		# primo servito)
 		queue: deque[tuple[int, int]] = deque()
 		queue.append(self.entry)
 		# il registro di "chi ha acceso chi": l'entrata non brucia da nessuno
@@ -335,7 +336,7 @@ class MazeGenerator:
 		came_from[self.entry] = None
 
 		while len(queue) > 0:
-			# il foglio piu' vecchio: questa cella prende fuoco adesso
+			# il primo della fila: questa cella prende fuoco adesso
 			x, y = queue.popleft()
 			# l'uscita ha preso fuoco: tutti i minuti sono al minimo
 			if (x, y) == self.exit:

@@ -1982,37 +1982,44 @@ celle sono scavate, non all'uscita."
   colpo viene ANNULLATO. (Teoria 1.4: il 2x2 è legale, il 3x3 no — il
   subject vieta corridoi più larghi di 2 celle.)
 
-### Approfondimento: le 4 righe di preparazione del fuoco (e cos'è deque)
+### Approfondimento: le due strutture del fuoco — queue e came_from
 
-- Lettura ad alta voce: queue = "la FILA dei fogli del fuoco, nasce
-  vuota"; queue.append(self.entry) = "il primo foglio è l'entrata:
-  la prima a prendere fuoco, al minuto 0"; came_from = "il REGISTRO
-  di chi ha acceso chi, nasce vuoto"; came_from[self.entry] = None =
-  "l'entrata non è stata accesa da nessuno".
-- Chi è cosa: collections = MODULO predefinito (libreria standard);
-  deque = CLASSE predefinita dentro collections (dall'import in cima:
-  from collections import deque); deque() = la FABBRICA che crea una
-  fila vuota; queue = NOSTRA variabile. Deque = double-ended queue
-  (coda a due estremità). NON è una funzione: è un oggetto che sa i
-  suoi comandi (come random.Random del dado).
-- La meccanica della fila (del panettiere): append = mettersi in CODA;
-  popleft = servire dal DAVANTI. Chi arriva prima esce prima: FIFO
-  (First In, First Out). Esempio: anna, bruno, carla arrivano in
-  fila; il primo popleft serve anna, poi bruno; dario arrivato dopo
-  aspetta dietro a carla. In C: array circolare o lista con due
-  indici testa/coda, fatti a mano.
-- Perché la fila È il fuoco: l'ordine di uscita È l'ordine dei
-  minuti. Ogni popleft = un minuto: minuto 0 l'entrata, minuto 1 i
-  suoi vicini, minuto 2 i vicini dei vicini... (traccia del 3x3:
-  minuto 4 = l'uscita, minuto minimo = strada più corta). La talpa
-  invece usava la CIMA della corda (LIFO): stessa pila di fogli,
-  estremità opposta.
-- Il None piantato qui è il CAPOLINEA della risalita: seguendo "chi
-  ha acceso chi" dall'uscita, la catena finisce esattamente qui
-  (cell diventa None e il while si ferma). In C: parent[entry] = -1
-  (None = -1 = NULL).
-- Le 4 righe sono la PREPARAZIONE: la fila esiste con un foglio, il
-  registro esiste con una voce. Il while dopo li riempie.
+**Le DEFINIZIONI (sono le uniche due cose che servono):**
+
+- **queue** = la LISTA D'ATTESA delle celle che devono ancora
+  prendere fuoco, nell'ordine in cui sono state accese. Nel codice è
+  una deque del modulo collections: append = mettersi in coda,
+  popleft = servire il primo della fila (FIFO: il perché è nella
+  teoria 1.5).
+- **came_from** = il REGISTRO che risponde alla domanda "chi ha
+  acceso questa cella?". È un dizionario da cella a cella; l'entrata
+  ha None perché non l'ha accesa nessuno. Serve SOLO alla fine: per
+  risalire il percorso dall'uscita fino all'entrata.
+
+**Lettura ad alta voce delle 4 righe:** queue = deque() → "la lista
+d'attesa nasce vuota"; queue.append(self.entry) → "il primo in
+attesa è l'entrata: prende fuoco al minuto 0"; came_from = {} → "il
+registro nasce vuoto"; came_from[self.entry] = None → "l'entrata non
+è stata accesa da nessuno".
+
+**La meccanica FIFO in breve** (la fila del panettiere): append =
+mettersi in coda, popleft = servire il davanti. anna, bruno, carla
+arrivano in fila: si serve anna, poi bruno, poi carla; dario,
+arrivato dopo, aspetta. Chi arriva prima esce prima — e per il fuoco
+questo significa: i minuti escono in ordine crescente (ogni popleft
+= un minuto). La corda della talpa usava l'estremità opposta (LIFO):
+lì serviva tornare indietro, qui contare i minuti.
+
+**Chi è cosa:** collections = MODULO predefinito (libreria
+standard); deque = CLASSE predefinita dentro collections (from
+collections import deque); deque() = la FABBRICA che crea la fila
+vuota; queue = NOSTRA variabile. Deque = double-ended queue (coda a
+due estremità). In C: fila a mano con array circolare o due indici
+testa/coda; il None del registro = parent[entry] = -1 (NULL).
+
+**Il None è il capolinea:** seguendo "chi ha acceso chi" dall'uscita,
+la catena finisce esattamente qui (cell diventa None e il while della
+risalita si ferma).
 
 Risposta da evaluation: "queue è una deque del modulo collections:
 una fila FIFO che contiene l'entrata come primo foglio. came_from è
@@ -2021,16 +2028,16 @@ partenza della catena e capolinea della risalita."
 
 ### solve (righe 297-331): il fuoco (teoria 1.5) — tappa C del main
 
-- `queue = deque()` — ★ PRIMA VOLTA `deque`: la CODA a due estremità
-  (dal cassetto collections): la pila di fogli presa dal FONDO (FIFO)
-  È il fuoco (teoria 1.5).
-- queue.append(self.entry): il primo foglio è l'entrata. `came_from` —
-  il registro "chi ha acceso chi"; l'entrata non è stata accesa da
-  nessuno → None.
+- `queue = deque()` — ★ PRIMA VOLTA `deque`: la LISTA D'ATTESA delle
+  celle che devono ancora prendere fuoco (append = in coda, popleft =
+  primo della fila: FIFO — il perché è nella teoria 1.5).
+- queue.append(self.entry): il primo in attesa è l'entrata (minuto 0).
+  `came_from` — il REGISTRO che risponde "chi ha acceso questa
+  cella?"; l'entrata non è stata accesa da nessuno → None.
 - Il while:
-  - `x, y = queue.popleft()` — ★ PRIMA VOLTA `popleft`: prende il
-    foglio dal FONDO (append mette in cima → il primo preso è il più
-    VECCHIO: l'ordine giusto dei minuti, teoria 1.5).
+  - `x, y = queue.popleft()` — ★ PRIMA VOLTA `popleft`: serve il
+    PRIMO della fila (quello in attesa da più tempo): l'ordine di
+    servizio È l'ordine dei minuti (teoria 1.5).
   - Se è l'uscita → `break` (★ PRIMA VOLTA `break`: esce subito dal
     ciclo — il fuoco è arrivato).
   - I 4 controlli (N/E/S/W): se il muro è APERTO → `_add_neighbor`
