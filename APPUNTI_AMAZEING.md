@@ -2028,7 +2028,7 @@ celle sono scavate, non all'uscita."
 
 **Lettura ad alta voce delle 4 righe:** queue = deque() → "la lista
 d'attesa nasce vuota"; queue.append(self.entry) → "il primo in
-attesa è l'entrata: prende fuoco al minuto 0"; came_from = {} → "il
+attesa è l'entrata"; came_from = {} → "il
 registro nasce vuoto"; came_from[self.entry] = None → "l'entrata non
 è stata accesa da nessuno".
 
@@ -2036,9 +2036,10 @@ registro nasce vuoto"; came_from[self.entry] = None → "l'entrata non
 mettersi in coda, popleft = servire il davanti. anna, bruno, carla
 arrivano in fila: si serve anna, poi bruno, poi carla; dario,
 arrivato dopo, aspetta. Chi arriva prima esce prima — e per il fuoco
-questo significa: i minuti escono in ordine crescente (ogni popleft
-= un minuto). La corda della talpa usava l'estremità opposta (LIFO):
-lì serviva tornare indietro, qui contare i minuti.
+questo significa: le celle escono in ordine di distanza dall'entrata
+(chi è stato acceso prima sta più vicino). La corda della talpa usava
+l'estremità opposta (LIFO): lì serviva tornare indietro, qui servire
+in ordine di arrivo.
 
 **Chi è cosa:** collections = MODULO predefinito (libreria
 standard); deque = CLASSE predefinita dentro collections (from
@@ -2082,21 +2083,21 @@ La regola dei giri: ESCE = popleft (serve il primo della fila);
 ENTRANO = le celle nuove accese, in coda alla fila (append).
 
 - STADIO 0 (le 4 righe): queue = [(0,0)]; came_from = {(0,0): None}.
-- GIRO 1: ESCE (0,0) [minuto 0]. ENTRANO (1,0) e (0,1), accese da
+- GIRO 1: ESCE (0,0). ENTRANO (1,0) e (0,1), accese da
   (0,0): il bivio. queue = [(1,0), (0,1)]; came_from = {(0,0): None,
   (1,0): (0,0), (0,1): (0,0)}.
-- GIRO 2: ESCE (1,0) [minuto 1]. ENTRA (2,0), accesa da (1,0). queue
+- GIRO 2: ESCE (1,0). ENTRA (2,0), accesa da (1,0). queue
   = [(0,1), (2,0)]; came_from = {(0,0): None, (1,0): (0,0), (0,1):
   (0,0), (2,0): (1,0)}.
-- GIRO 3: ESCE (0,1) [minuto 2]. ENTRA (0,2), accesa da (0,1). queue
+- GIRO 3: ESCE (0,1). ENTRA (0,2), accesa da (0,1). queue
   = [(2,0), (0,2)]; came_from = {(0,0): None, (1,0): (0,0), (0,1):
   (0,0), (2,0): (1,0), (0,2): (0,1)}.
-- GIRO 4: ESCE (2,0) [minuto 3]. ENTRA (2,1), accesa da (2,0). queue
+- GIRO 4: ESCE (2,0). ENTRA (2,1), accesa da (2,0). queue
   = [(0,2), (2,1)]; came_from = {(0,0): None, (1,0): (0,0), (0,1):
   (0,0), (2,0): (1,0), (0,2): (0,1), (2,1): (2,0)}.
-- GIRO 5: ESCE (0,2) [minuto 4]. NIENTE in entrata: vicolo cieco.
+- GIRO 5: ESCE (0,2). NIENTE in entrata: vicolo cieco.
   queue = [(2,1)]; came_from invariato.
-- GIRO 6: ESCE (2,1) [minuto 5]. ENTRA (2,2), accesa da (2,1):
+- GIRO 6: ESCE (2,1). ENTRA (2,2), accesa da (2,1):
   l'uscita. queue = [(2,2)]; came_from = {(0,0): None, (1,0): (0,0),
   (0,1): (0,0), (2,0): (1,0), (0,2): (0,1), (2,1): (2,0), (2,2):
   (2,1)}.
@@ -2111,7 +2112,8 @@ ENTRANO = le celle nuove accese, in coda alla fila (append).
   per questo ogni cella brucia una volta sola.
 
 Risposta da evaluation: "queue si riempie con i vicini appena accesi
-e si serve dal davanti (i minuti in ordine); came_from registra chi
+e si serve dal davanti (in ordine di distanza dall'entrata);
+came_from registra chi
 ha acceso chi e le celle già accese non rientrano. Il path si
 costruisce risalendo il registro dall'uscita fino al None
 dell'entrata, poi si capovolge."
@@ -2121,20 +2123,21 @@ dell'entrata, poi si capovolge."
 - `queue = deque()` — ★ PRIMA VOLTA `deque`: la LISTA D'ATTESA delle
   celle che devono ancora prendere fuoco (append = in coda, popleft =
   primo della fila: FIFO — il perché è nella teoria 1.5).
-- queue.append(self.entry): il primo in attesa è l'entrata (minuto 0).
+- queue.append(self.entry): il primo in attesa è l'entrata.
   `came_from` — il REGISTRO che risponde "chi ha acceso questa
   cella?"; l'entrata non è stata accesa da nessuno → None.
 - Il while:
   - `x, y = queue.popleft()` — ★ PRIMA VOLTA `popleft`: serve il
     PRIMO della fila (quello in attesa da più tempo): l'ordine di
-    servizio È l'ordine dei minuti (teoria 1.5).
+    servizio È l'ordine di distanza dall'entrata (teoria 1.5).
   - Se è l'uscita → `break` (★ PRIMA VOLTA `break`: esce subito dal
     ciclo — il fuoco è arrivato).
   - I 4 controlli (N/E/S/W): se il muro è APERTO → `_add_neighbor`
     (riga 333): se il vicino non è MAI stato visto (non sta in
     came_from), lo "accende": segna chi l'ha acceso e lo mette in
-    coda. Ogni cella si accende UNA volta sola → il primo minuto
-    registrato è il MINIMO (teoria 1.5: non lo scopre, lo costruisce).
+    coda. Ogni cella si accende UNA volta sola → la prima
+    registrazione è la distanza minima (teoria 1.5: non la scopre, la
+    costruisce).
 - Se l'uscita non è mai stata accesa (`if self.exit not in came_from:
   return []`) → lista vuota: nessun percorso (con un labirinto valido
   non succede, ma il codice è pronto).
@@ -2184,11 +2187,11 @@ dell'entrata, poi si capovolge."
   (backtracking).
 - "Quando finisce la generazione?" Quando la corda è vuota = tutte le
   celle scavate (NON all'uscita).
-- "Perché la coda prende dal fondo (FIFO)?" È il fuoco: i minuti
-  arrivano in ordine crescente e il primo che tocca l'uscita è il più
-  corto.
+- "Perché la coda prende dal fondo (FIFO)?" È il fuoco: le celle
+  escono in ordine di distanza dall'entrata, e la prima uscita
+  dell'uscita dà il percorso più corto.
 - "Perché il percorso è sicuramente il più corto?" Ogni cella si
-  accende una volta sola, al suo minuto minimo.
+  accende una volta sola, alla sua distanza minima dall'entrata.
 - "A cosa serve il controllo 3x3 del piccone?" Il subject vieta
   corridoi più larghi di 2 celle; se un colpo crea una piazzetta 3x3,
   si richiude.

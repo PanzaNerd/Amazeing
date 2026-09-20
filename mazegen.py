@@ -320,10 +320,11 @@ class MazeGenerator:
     def solve(self) -> list[tuple[int, int]]:
         """Il FUOCO sull'erba secca (BFS): trova il percorso piu' breve.
 
-        Ogni cella prende fuoco al suo minuto minimo possibile: la coda
-        si serve dal davanti (FIFO). Quando l'uscita brucia, risalendo
-        la catena di "chi ha acceso chi" si ottiene il percorso piu'
-        corto, o la lista vuota se l'uscita non brucia mai.
+        La coda si serve dal davanti (FIFO): le celle escono in ordine
+        di distanza dall'entrata, quindi quando l'uscita esce la prima
+        volta il percorso e' il piu' corto. Risalendo la catena di
+        "chi ha acceso chi" si ottiene il percorso, o la lista vuota
+        se l'uscita non brucia mai.
         """
         # la LISTA D'ATTESA delle celle da accendere (FIFO: primo arrivato,
         # primo servito)
@@ -336,7 +337,7 @@ class MazeGenerator:
         while len(queue) > 0:
             # il primo della fila: questa cella prende fuoco adesso
             x, y = queue.popleft()
-            # l'uscita ha preso fuoco: tutti i minuti sono al minimo
+            # l'uscita ha preso fuoco: il percorso registrato e' il piu' corto
             if (x, y) == self.exit:
                 break
             # il fuoco prova le 4 direzioni, solo dove il muro e' aperto
@@ -370,7 +371,7 @@ class MazeGenerator:
         """Accende il vicino (nx, ny) se non ha mai preso fuoco.
 
         Segna chi l'ha acceso (came_from) e lo mette in fondo alla coda:
-        brucera' al minuto successivo.
+        uscira' dopo quelli arrivati prima.
         """
         if (nx, ny) not in came_from:
             came_from[(nx, ny)] = (x, y)
