@@ -2327,6 +2327,47 @@ caratteri.
   SFONDI riempiono i mattoncini del 42: il blocco uniforme). Il verde
   NON c'è: è riservato al percorso.
 
+### Approfondimento: perché l'import non prende E (e il from...import spiegato)
+
+- COME SI LEGGE: "dal modulo mazegen prendi i nomi N, S, W e
+  MazeGenerator".
+- DOMANDA: e la E? Non c'è perché il display non la usa MAI.
+- Il disegno fa UNA cosa per ogni cella: disegna il muro SOPRA (N) e
+  il muro a SINISTRA (W). Basta questo:
+  - il muro EST della cella (x,y) è il muro OVEST della cella (x+1,y):
+    lo disegna la vicina di destra quando tocca a lei;
+  - il muro SUD della cella (x,y) è il muro NORD della cella (x,y+1):
+    lo disegna la cella sotto.
+- I 4 bordi esterni, e chi li disegna:
+  - ALTO: N della riga 0, primo giro del loop dei muri. Il bordo
+    esterno non si apre MAI (la talpa si ferma ai bordi): sempre "─".
+  - SINISTRA: W della colonna 0: sempre "│".
+  - BASSO: S dell'ultima riga, nel loop del fondo: l'UNICO punto del
+    display dove si legge S.
+  - DESTRA: una "│" FISSA attaccata a fine riga, senza guardare
+    nessun bit. Giusto così: il bordo esterno è sempre chiuso, il
+    segno non cambia mai.
+- Se importassimo E senza usarla: flake8 F401 "imported but unused".
+  Un import che non serve è un errore di igiene.
+- from...import, i DUE modi di prendere da un modulo:
+  1. import mazegen: entra TUTTO il modulo; i nomi si usano col punto
+     (mazegen.N). In C: l'#include, ti porti il file intero.
+  2. from mazegen import N: copia SOLO il nome N nel nostro file; da
+     lì si scrive N da solo. In C: copiare a mano nel file la sola
+     riga #define N 1.
+- N, S, W sono VARIABILI normali (le monete 1, 4, 8 di 1.2, definite
+  in cima a mazegen.py). Python non distingue: variabili, funzioni e
+  classi si importano tutte con la stessa sintassi — nella stessa
+  riga c'è anche MazeGenerator, che è una classe.
+- Il nome importato è una COPIA: se dopo l'import mazegen.N cambiasse,
+  il nostro N resterebbe il valore vecchio. Qui non importa: le monete
+  non cambiano mai.
+- Risposta da evaluation: "il display disegna solo i muri N e W di
+  ogni cella; l'E di una cella è il W della vicina di destra e il S è
+  il N di quella sotto; il bordo destro è una barra fissa perché
+  esterno. Importare un nome che non si usa darebbe un errore di
+  flake8."
+
 ### run (chiamata dal main, riga 52)
 
 - show_path = False (il percorso nasce nascosto) e color_index = 0
