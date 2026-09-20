@@ -12,4 +12,4 @@ requires-python = ">=3.10"
 py-modules = ["mazegen"]
 
 [tool.mypy]
-exclude = ["\\.venv", "output_validator\\.py"]
+exclude = ["\\.venv", "output_validator\\.py", "tests/"]
