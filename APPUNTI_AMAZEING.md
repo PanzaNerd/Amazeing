@@ -2118,6 +2118,35 @@ ha acceso chi e le celle già accese non rientrano. Il path si
 costruisce risalendo il registro dall'uscita fino al None
 dell'entrata, poi si capovolge."
 
+### Approfondimento: lo scudo prima della risalita (exit not in came_from)
+
+- Lettura ad alta voce: "se l'uscita non è mai stata accesa — non
+  sta nel registro — restituisci la lista vuota: nessun percorso".
+- Il while finisce in DUE modi soli: 1) break perché l'uscita è
+  uscita dalla fila (allora STA nel registro); 2) la fila si svuota
+  da sola = il fuoco ha bruciato tutto ciò che poteva senza mai
+  toccare l'uscita. Con un labirinto valido il modo 2 non succede
+  mai (la talpa collega tutto e l'uscita non è un mattoncino), ma
+  solve non lo sa: è un modulo riusabile, chi lo importa potrebbe
+  passare una griglia sconnessa o un'uscita in una tasca isolata.
+- Cosa protegge DAVVERO: la RISALITA subito dopo usa l'uscita come
+  CHIAVE del dizionario (cell = came_from[cell] a ogni passo). Se
+  l'uscita non fosse una chiave: KeyError = crash. Il controllo
+  garantisce: o l'uscita ha la sua catena (e si risale), o si esce
+  prima con la lista vuota.
+- È lo stesso schema degli altri scudi: il bordo prima di leggere la
+  griglia, len(neighbors) prima del dado, qui la CHIAVE prima di
+  usarla.
+- Dopo il return [] non crasha niente: path_to_nesw([]) produce una
+  stringa vuota e il file di output ha la riga del percorso vuota.
+
+Risposta da evaluation: "Se l'uscita è irraggiungibile il fuoco non
+la accende mai e la fila si svuota da sola: solve restituisce la
+lista vuota invece di crashare nella risalita. Con i nostri
+labirinti non succede mai, ma la funzione è difensiva: è il
+controllo di sicurezza prima di usare l'uscita come chiave del
+registro."
+
 ### solve (righe 297-331): il fuoco (teoria 1.5) — tappa C del main
 
 - `queue = deque()` — ★ PRIMA VOLTA `deque`: la LISTA D'ATTESA delle
