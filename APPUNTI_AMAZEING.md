@@ -613,6 +613,30 @@ del display "1" rigenera con lo stesso valore.
    subito (si rimette indietro); se no → resta aperta: è una
    SCORCIATOIA.
 
+### Perché proprio 20 colpi?
+
+- Il subject NON fissa il numero: chiede solo che con PERFECT=False
+  il labirinto abbia scorciatoie e che i corridoi restino larghi al
+  massimo 2 celle. Il 20 è una NOSTRA scelta.
+- 20 sono i TENTATIVI, non le aperture: molti colpi vengono scartati
+  (bordo, mattoncino del 42, muro già aperto, piazzetta 3x3). Numeri
+  reali (seed 42): 5x5 → 5 aperture su 20; 9x6 → 1 sola (8 colpi
+  finiti sui mattoncini del 42); 20x15 → 6; 40x30 → 10.
+- Perché 20 è abbastanza: anche nel caso peggiore resta almeno UNA
+  scorciatoia → il labirinto è davvero non perfetto. Con 1 solo
+  tentativo, un rifiuto lascerebbe il labirinto ancora perfetto,
+  violando PERFECT=False.
+- Perché non di più: con 1000 colpi il labirinto resterebbe valido
+  (il controllo 3x3 protegge la regola) ma si riempirebbe di cicli.
+  20 è il punto di equilibrio: qualche scorciatoia su ogni misura,
+  senza stravolgere il labirinto della talpa.
+
+Risposta da evaluation: "Il subject non fissa un numero: chiede solo
+che il labirinto non sia perfetto e che i corridoi restino max 2
+celle. Noi facciamo 20 TENTATIVI: dopo gli scarti ne restano meno —
+abbastanza da garantire sempre qualche ciclo, pochi da non riempire
+il labirinto di scorciatoie."
+
 ### La traccia vera dei 20 colpi (stesso 4x4, seed 42)
 
 ```
