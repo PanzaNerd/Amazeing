@@ -2059,17 +2059,21 @@ partenza della catena e capolinea della risalita."
 ### Approfondimento: la traccia completa — da queue e came_from vuoti al path
 
 Il labirinto dell'esempio (generato dal codice: I = entrata, O =
-uscita; i trattini sono i muri, gli spazi i passaggi):
+uscita; ogni cella è larga 3 caratteri):
 
 ```
-+-----+
-|I    |
-| +-+ |
-| | | |
-| +-+ |
-| | |O|
-+-+-+-+
++---+---+---+
+| I         |
++   +---+   +
+|   |   |   |
++   +---+   +
+|   |   | O |
++---+---+---+
 ```
+
+Leggi il disegno: da I si va a DESTRA lungo la riga di sopra (tutto
+aperto), poi GIU' nella colonna di destra fino a O. Da I si scende
+anche a SINISTRA: giù e giù, poi muro = vicolo cieco.
 
 Ramo basso (0,0)-(1,0)-(2,0)-(2,1)-(2,2) = l'uscita; ramo sinistro
 (0,0)-(0,1)-(0,2) = vicolo cieco.
