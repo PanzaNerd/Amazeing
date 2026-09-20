@@ -5,7 +5,9 @@ Legge un file di righe KEY=VALUE e restituisce un oggetto Config con i
 parametri validati del labirinto.
 """
 
-REQUIRED_KEYS: list[str] = ["WIDTH", "HEIGHT", "ENTRY", "EXIT", "OUTPUT_FILE", "PERFECT"]
+REQUIRED_KEYS: list[str] = [
+    "WIDTH", "HEIGHT", "ENTRY", "EXIT", "OUTPUT_FILE", "PERFECT"
+]
 
 
 class ConfigError(Exception):
@@ -67,11 +69,13 @@ def _parse_coords(raw: str, key: str) -> tuple[int, int]:
     return (x, y)
 
 
-def _check_bounds(point: tuple[int, int], width: int, height: int, key: str) -> None:
+def _check_bounds(point: tuple[int, int], width: int, height: int,
+                  key: str) -> None:
     """Controlla che il punto stia dentro la griglia."""
     x, y = point
     if x < 0 or x >= width or y < 0 or y >= height:
-        raise ConfigError(f"'{key}' {point} is outside the maze ({width}x{height})")
+        raise ConfigError(
+            f"'{key}' {point} is outside the maze ({width}x{height})")
 
 
 def parse_config(path: str) -> Config:
@@ -123,14 +127,16 @@ def parse_config(path: str) -> Config:
     width = _parse_int(values["WIDTH"], "WIDTH")
     height = _parse_int(values["HEIGHT"], "HEIGHT")
     if width < 2 or height < 2:
-        raise ConfigError(f"WIDTH and HEIGHT must be at least 2 (got {width}x{height})")
+        raise ConfigError(
+            f"WIDTH and HEIGHT must be at least 2 (got {width}x{height})")
 
     entry = _parse_coords(values["ENTRY"], "ENTRY")
     exit_ = _parse_coords(values["EXIT"], "EXIT")
     _check_bounds(entry, width, height, "ENTRY")
     _check_bounds(exit_, width, height, "EXIT")
     if entry == exit_:
-        raise ConfigError(f"ENTRY and EXIT must be different (both are {entry})")
+        raise ConfigError(
+            f"ENTRY and EXIT must be different (both are {entry})")
 
     perfect = _parse_bool(values["PERFECT"], "PERFECT")
 

@@ -55,32 +55,37 @@ def test_duplicate_key() -> None:
 
 def test_bad_integer() -> None:
     with tempfile.TemporaryDirectory() as tmpdir:
+        bad = VALID.replace("WIDTH=20", "WIDTH=abc")
         with pytest.raises(ConfigError, match="WIDTH"):
-            parse_config(_write(tmpdir, VALID.replace("WIDTH=20", "WIDTH=abc")))
+            parse_config(_write(tmpdir, bad))
 
 
 def test_bad_coords() -> None:
     with tempfile.TemporaryDirectory() as tmpdir:
+        bad = VALID.replace("ENTRY=0,0", "ENTRY=abc")
         with pytest.raises(ConfigError, match="ENTRY"):
-            parse_config(_write(tmpdir, VALID.replace("ENTRY=0,0", "ENTRY=abc")))
+            parse_config(_write(tmpdir, bad))
 
 
 def test_out_of_bounds() -> None:
     with tempfile.TemporaryDirectory() as tmpdir:
+        bad = VALID.replace("EXIT=19,14", "EXIT=99,99")
         with pytest.raises(ConfigError, match="outside"):
-            parse_config(_write(tmpdir, VALID.replace("EXIT=19,14", "EXIT=99,99")))
+            parse_config(_write(tmpdir, bad))
 
 
 def test_entry_equals_exit() -> None:
     with tempfile.TemporaryDirectory() as tmpdir:
+        bad = VALID.replace("EXIT=19,14", "EXIT=0,0")
         with pytest.raises(ConfigError, match="different"):
-            parse_config(_write(tmpdir, VALID.replace("EXIT=19,14", "EXIT=0,0")))
+            parse_config(_write(tmpdir, bad))
 
 
 def test_bad_perfect() -> None:
     with tempfile.TemporaryDirectory() as tmpdir:
+        bad = VALID.replace("PERFECT=True", "PERFECT=maybe")
         with pytest.raises(ConfigError, match="PERFECT"):
-            parse_config(_write(tmpdir, VALID.replace("PERFECT=True", "PERFECT=maybe")))
+            parse_config(_write(tmpdir, bad))
 
 
 def test_unknown_keys_ignored() -> None:

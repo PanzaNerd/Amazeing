@@ -58,7 +58,8 @@ class MazeGenerator:
         width: larghezza del labirinto in celle.
         height: altezza del labirinto in celle.
         rng: generatore di numeri casuali (parte dal seed).
-        grid: griglia del labirinto, grid[y][x] = 0-15 (bit 0-3 = muri N/E/S/W).
+        grid: griglia del labirinto, grid[y][x] = 0-15
+            (bit 0-3 = muri N/E/S/W).
         forty_two: celle del pattern "42" (vuota se assente).
         has_42: True se il pattern "42" e' presente.
         entry: coordinate (x, y) dell'entrata.
@@ -66,7 +67,8 @@ class MazeGenerator:
         perfect: True se l'ultimo labirinto generato e' perfetto.
     """
 
-    def __init__(self, width: int, height: int, seed: int | None = None) -> None:
+    def __init__(self, width: int, height: int,
+                 seed: int | None = None) -> None:
         self.width = width
         self.height = height
         self.rng = random.Random(seed)
@@ -103,7 +105,8 @@ class MazeGenerator:
         Args:
             perfect: True per un labirinto perfetto (un solo percorso).
             entry: coordinate (x, y) dell'entrata.
-            exit: coordinate (x, y) dell'uscita (None = angolo in basso a destra).
+            exit: coordinate (x, y) dell'uscita
+                (None = angolo in basso a destra).
             with_42: True per disegnare il pattern "42" (se c'e' spazio).
 
         Raises:
@@ -217,8 +220,9 @@ class MazeGenerator:
                 visited[ny][nx] = True
                 stack.append((nx, ny))
 
-    def _unvisited_neighbors(self, x: int, y: int,
-                             visited: list[list[bool]]) -> list[tuple[int, int, int, int]]:
+    def _unvisited_neighbors(
+            self, x: int, y: int, visited: list[list[bool]]
+    ) -> list[tuple[int, int, int, int]]:
         """Le 4 porte della stanza dove sta la talpa, in ordine N, E, S, W.
 
         Per ogni porta aperta (il vicino esiste e non e' ancora scavato)
@@ -289,7 +293,10 @@ class MazeGenerator:
                 self._add_wall(nx, ny, mask_there)
 
     def _has_3x3_open(self) -> bool:
-        """True se esiste una piazzetta 3x3 tutta aperta (vietata: corridoi max 2 celle)."""
+        """True se esiste una piazzetta 3x3 tutta aperta.
+
+        Vietata: i corridoi devono restare larghi al massimo 2 celle.
+        """
         for y in range(self.height - 2):
             for x in range(self.width - 2):
                 if self._window_3x3_open(x, y):
@@ -297,7 +304,9 @@ class MazeGenerator:
         return False
 
     def _window_3x3_open(self, x: int, y: int) -> bool:
-        """True se la finestra 3x3 con angolo in alto a sinistra (x, y) e' tutta aperta."""
+        """True se la finestra 3x3 con angolo in alto a sinistra
+        (x, y) e' tutta aperta.
+        """
         for wy in range(y, y + 2):
             for wx in range(x, x + 3):
                 if self._has_wall(wx, wy, S):
