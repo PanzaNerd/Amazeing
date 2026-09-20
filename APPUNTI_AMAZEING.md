@@ -25,7 +25,8 @@ letto/elaborato → cosa ne deriva**. Niente codice, illustrazioni semplici.
    - 3.3 mazegen.py — il cuore (base pronta)
    - 3.4 output_writer.py — il file di output (base pronta)
    - 3.5 display.py — il terminale interattivo (base pronta)
-4. Glossario
+4. Preparazione alla difesa (la scala di valutazione)
+5. Glossario
 
 ---
 
@@ -143,6 +144,9 @@ giusto:
 1. Si apre il file e si leggono le righe una a una
 2. Righe vuote e commenti (`#`) vengono saltati
 3. Ogni riga viene spezzata in due al segno `=`: chiave e valore
+   (la chiave diventa MAIUSCOLA: il subject ammette anche le
+   minuscole, es. width=20; PERFECT accetta pure true/false
+   minuscoli)
 4. Ogni coppia finisce in una tabella chiave→valore (il dizionario)
 5. Alla fine si controlla che ci siano TUTTE le chiavi obbligatorie:
    WIDTH, HEIGHT, ENTRY, EXIT, OUTPUT_FILE, PERFECT
@@ -1392,8 +1396,10 @@ spiegate quando verranno CHIAMATE, nell'ordine di esecuzione.
   secondo argomento 1 = "taglia solo al PRIMO =" (un valore potrebbe
   contenere altri =). `key, value =` è lo SPACCHETTAMENTO: i due pezzi
   finiscono uno per variabile (in C: strtok + copie a mano).
-- `key = key.strip()` e `value = value.strip()` — pulizia dei pezzi:
-  via gli spazi rimasti attorno all'= (strip già vista alla riga 106).
+- `key = key.strip().upper()` e `value = value.strip()` — pulizia dei
+  pezzi: via gli spazi attorno all'=, e la chiave diventa MAIUSCOLA
+  (il subject ammette le minuscole: width=20). Il valore resta com'è:
+  per esempio è un nome di file.
 - `if key in values:` — `in` su un DIZIONARIO guarda le CHIAVI:
   "questa chiave c'è già?" → doppione → ConfigError (ogni chiave deve
   comparire una volta sola).
@@ -2366,7 +2372,99 @@ lato ha un muro → spazio.
 
 ---
 
-# 4. Glossario
+# 4. Preparazione alla difesa (la scala di valutazione)
+
+La scala della difesa ha 7 sezioni. Per ognuna: cosa fa l'evaluator,
+dove sta la risposta nel codice, cosa dire. I punti con ▼ sono quelli
+dove si scava di più.
+
+## 4.1 Display e menu (sezione 2 della scala)
+
+- Esegue a_maze_ing.py col config di default → labirinto + menu.
+  Basta `make run` (o python3 a_maze_ing.py config.txt).
+- Menu obbligatori: 1 = rigenera, 2 = mostra/nasconde il percorso
+  più corto, 3 = cambia colore dei muri. q = extra (uscita).
+- Da dire: il menu è il while True di display.run; il 2 usa `not`
+  per accendere/spegnere e ricalcola il percorso con solve() solo
+  per disegnarlo; il 3 cicla la giostra dei colori col resto %.
+
+## 4.2 Config: formato ed errori (sezione 3) ▼
+
+- Formato: commenti con #, righe KEY=VALUE (MINUSCOLE OK: il parser
+  fa .upper() sulla chiave), chiavi obbligatorie WIDTH HEIGHT ENTRY
+  EXIT OUTPUT_FILE PERFECT (SEED facoltativa).
+- L'evaluator EDITERA' config.txt e proverà TUTTI questi errori (mai
+  crashare: messaggio + uscita 1):
+  - chiave mancante → "missing mandatory keys"
+  - riga senza = → "expected 'KEY=VALUE'"
+  - lettere al posto dei numeri → "must be an integer"
+  - PERFECT sbagliato → "must be True or False"
+  - ENTRY/EXIT sbagliati → "must be 'x,y'" / "must be an integer" /
+    "outside the maze"
+- Da dire: il try/except del main con le reti; ogni errore è un
+  ConfigError col messaggio chiaro; il programma non crasha MAI
+  (richiesta esplicita della scala).
+
+## 4.3 File di output (sezione 4)
+
+- Formato: HEIGHT righe di WIDTH cifre, riga vuota, ENTRY, EXIT,
+  percorso NESW. Il validator del subject resta muto (verificato).
+- "Il percorso nel file combacia col display": la lista è la stessa
+  (solve()), il BFS è deterministico: pallini verdi = lettere NESW.
+- Da dire: la cifra esadecimale = le monete della cella (bit
+  N/E/S/W), tradotta da HEX_DIGITS[cell].
+
+## 4.4 Il generatore (sezione 5) ▼▼ — il cuore della difesa
+
+- Casuale ma riproducibile: random.Random(seed) personale (il
+  librone 1.3). Stesso seed → stesso labirinto.
+- Parametri incoerenti: generate alza ValueError (entry/exit fuori o
+  uguali); width/height negativi fanno risultare l'entry fuori →
+  stesso errore.
+- Tutte le celle raggiungibili tranne il 42: la talpa scava tutto
+  (la corda si svuota solo quando tutte le celle sono scavate); i
+  mattoncini sono marcati visitati = cemento.
+- Muri tutto intorno: il bordo esterno non si apre MAI.
+- Niente 3x3 aperte: il piccone controlla dopo ogni colpo
+  (_has_3x3_open, i 12 muri interni) e richiude se nasce la
+  piazzetta. "Come l'hai verificato?" → test + tracce negli appunti.
+- 42 presente, o messaggio sul terminale se troppo piccolo (sotto
+  9x6): è il resoconto has_42 letto dal main.
+- PERFECT=True → un solo percorso: la talpa costruisce un albero
+  ricoprente.
+
+## 4.5 Modulo riusabile (sezione 6) — PROVA DAL VIVO ▼
+
+L'evaluator chiede di RICOSTRUIRE il pacchetto e installarlo in un
+altro ambiente. Sequenza provata (provala anche tu prima della
+difesa):
+
+```
+python3 -m venv /tmp/venv1
+/tmp/venv1/bin/pip install build
+/tmp/venv1/bin/python -m build
+python3 -m venv /tmp/venv2
+/tmp/venv2/bin/pip install dist/mazegen-1.0.0-py3-none-any.whl
+/tmp/venv2/bin/python a_maze_ing.py config.txt
+```
+
+- Da dire: pyproject.toml + setuptools fanno il pacchetto; mazegen.py
+  è autonomo (non importa config, output né display): funziona
+  installato da solo.
+
+## 4.6 Le trappole della difesa
+
+- Mai crash: anche Ctrl+C è gestito (uscita 0); l'ultimo except
+  Exception copre tutto. La scala dà 0 a un programma che termina in
+  modo inatteso.
+- Non modificare nessun file se non config.txt.
+- La scala premia chi spiega: usa le metafore (talpa, piccone,
+  fuoco) e le tracce riga per riga degli appunti.
+- Bonus (sezione 7): facoltativi, non ne abbiamo — non prometterne.
+
+---
+
+# 5. Glossario
 
 - **nibble:** 4 bit = mezza byte = una cifra esadecimale
 - **BFS:** visita in ampiezza, trova il percorso più corto
