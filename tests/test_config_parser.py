@@ -88,6 +88,30 @@ def test_bad_perfect() -> None:
             parse_config(_write(tmpdir, bad))
 
 
+def test_lowercase_keys_ok() -> None:
+    content = "\n".join([
+        "width=20",
+        "height=15",
+        "entry=0,0",
+        "exit=19,14",
+        "output_file=maze.txt",
+        "perfect=true",
+        "seed=42",
+    ])
+    with tempfile.TemporaryDirectory() as tmpdir:
+        config = parse_config(_write(tmpdir, content + "\n"))
+    assert config.width == 20
+    assert config.height == 15
+    assert config.perfect is True
+    assert config.seed == 42
+
+
+def test_duplicate_key_case_insensitive() -> None:
+    with tempfile.TemporaryDirectory() as tmpdir:
+        with pytest.raises(ConfigError, match="duplicate"):
+            parse_config(_write(tmpdir, VALID + "width=10\n"))
+
+
 def test_unknown_keys_ignored() -> None:
     with tempfile.TemporaryDirectory() as tmpdir:
         config = parse_config(_write(tmpdir, VALID + "ALGORITHM=dfs\n"))

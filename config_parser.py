@@ -51,10 +51,14 @@ def _parse_int(raw: str, key: str) -> int:
 
 
 def _parse_bool(raw: str, key: str) -> bool:
-    """Converte 'True'/'False' in bool o solleva ConfigError."""
-    if raw == "True":
+    """Converte 'True'/'False' in bool o solleva ConfigError.
+
+    Accetta anche le minuscole (true/false): il subject ammette
+    chiavi e valori in minuscolo.
+    """
+    if raw.lower() == "true":
         return True
-    if raw == "False":
+    if raw.lower() == "false":
         return False
     raise ConfigError(f"'{key}' must be True or False, got '{raw}'")
 
@@ -106,9 +110,10 @@ def parse_config(path: str) -> Config:
             if "=" not in stripped:
                 raise ConfigError(
                     f"line {line_no}: expected 'KEY=VALUE', got '{stripped}'")
-            # la riga si taglia al PRIMO "="
+            # la riga si taglia al PRIMO "="; la chiave diventa MAIUSCOLA
+            # (il subject ammette anche le minuscole: width=20)
             key, value = stripped.split("=", 1)
-            key = key.strip()
+            key = key.strip().upper()
             value = value.strip()
             # doppione: ogni chiave deve comparire una volta sola
             if key in values:
