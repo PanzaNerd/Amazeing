@@ -1,14 +1,3 @@
-# **************************************************************************** #
-#                                                                              #
-#                                                         :::      ::::::::    #
-#    Makefile                                           :+:      :+:    :+:    #
-#                                                     +:+ +:+         +:+      #
-#    By: mpanzani <mpanzani@student.42.fr>          +#+  +:+       +#+         #
-#                                                 +#+#+#+#+#+   +#+            #
-#    Created: 2026/09/05 10:00:00 by mpanzani         #+#    #+#              #
-#    Updated: 2026/09/05 10:00:00 by mpanzani        ###   ########.fr        #
-#                                                                              #
-# **************************************************************************** #
 
 NAME = a_maze_ing.py
 CONFIG = config.txt
@@ -30,11 +19,11 @@ clean:
 	rm -rf __pycache__ .mypy_cache .pytest_cache build dist *.egg-info
 
 lint:
-	flake8 .
+	flake8 a_maze_ing.py config_parser.py display.py mazegen.py output_writer.py tests/
 	mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
 
 lint-strict:
-	flake8 .
+	flake8 a_maze_ing.py config_parser.py display.py mazegen.py output_writer.py tests/
 	mypy . --strict
 
 test:
