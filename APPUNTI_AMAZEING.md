@@ -2909,6 +2909,73 @@ python3 -m venv /tmp/venv2
   l'evaluator lo ricostruirà comunque dalle sorgenti (pyproject.toml
   + mazegen.py).
 
+### pyproject.toml dalla A alla Z (il "Tom")
+
+- COME SI LEGGE il nome: py-project-toml = "il file TOML di
+  configurazione del progetto Python". TOML = Tom's Obvious Minimal
+  Language: un formato standard per i file di configurazione —
+  sezioni in parentesi quadre [sezione] e righe chiave = valore. È il
+  config.txt del sistema di COSTRUZIONE (in C non c'è l'equivalente
+  diretto: è una ricetta letta da pip, come un Makefile ma per
+  l'installazione).
+- PERCHÉ esiste: il cap. VI vuole il modulo riusabile "suitable for a
+  later installation by pip". pip, per installare, ha bisogno della
+  RICETTA: nome, versione, quali file. pyproject.toml È la ricetta.
+- I 4 blocchi del NOSTRO file, chi è cosa:
+  1. [build-system]: chi fa il lavoro di costruzione. requires =
+     setuptools (la libreria standard per fare pacchetti, predefinita
+     di Python) e build-backend = setuptools.build_meta (il motore).
+  2. [project]: la CARTA D'IDENTITÀ del pacchetto: name = "mazegen",
+     version = "1.0.0", description, requires-python = ">=3.10".
+  3. [tool.setuptools]: py-modules = ["mazegen"] → QUALE file entra
+     nel pacchetto: il solo mazegen.py.
+  4. [tool.mypy]: exclude = [".venv", "output_validator.py",
+     "tests/"] → NON c'entra col pacchetto: è la configurazione di
+     mypy, che vive qui perché questo è il posto standard dove mypy
+     la cerca (così `mypy .` è pulito anche senza pytest installato).
+- IL BUILD, in ordine di esecuzione:
+  1. python3 -m build (o make build) → setuptools legge pyproject.toml
+     → produce dist/mazegen-1.0.0-py3-none-any.whl E il tar.gz (il
+     subject ammette entrambi).
+  2. Il NOME della wheel si scompone: nome-versione-python-ABI-
+     piattaforma: py3 = gira su qualunque Python 3; none = nessuna
+     ABI specifica (è puro codice Python, niente compilato); any =
+     qualunque sistema operativo. (In C sarebbe una libreria
+     compilata per architettura: qui "any".)
+  3. La wheel è letteralmente uno ZIP (si apre con unzip): dentro
+     mazegen.py + la cartella mazegen-1.0.0.dist-info con METADATA
+     (la carta d'identità copiata dal pyproject), WHEEL e RECORD (la
+     lista dei file).
+  4. pip install dist/mazegen-1.0.0-py3-none-any.whl (dentro un venv)
+     → copia mazegen.py dove Python lo trova → da qualunque
+     programma: from mazegen import MazeGenerator funziona.
+  5. Il venv: un Python ISOLATO (una copia di Python con le sue
+     librerie in una cartella a parte) — serve per non sporcare il
+     sistema e per provare l'installazione da zero, come farà
+     l'evaluator.
+- Perché SOLO mazegen.py entra nel pacchetto: è autonomo — importa
+  solo random e collections (mai config_parser, output_writer,
+  display). Il resto del programma non fa parte del modulo riusabile.
+- SEZIONE 6 della difesa, passo passo:
+  - l'evaluator vede la wheel alla radice del repo (cap. VI);
+  - in un venv installa i tool e RICOSTRUISCE il pacchetto dalle
+    nostre sorgenti (python3 -m build);
+  - in un altro venv installa la wheel e prova a USARE il modulo:
+    import, MazeGenerator, generate, solve;
+  - domande probabili, con risposta pronta:
+    - "Cos'è pyproject.toml?" La ricetta del pacchetto: nome,
+      versione, file, officina (setuptools).
+    - "Cos'è una wheel?" Il pacchetto pronto: uno zip con mazegen.py
+      e i metadati; nome = nome-versione-py3-none-any.
+    - "Cos'è un venv?" Un Python isolato per provare l'installazione
+      senza sporcare il sistema.
+    - "Come si usa il generatore?" Le 3 cose del cap. VI:
+      istanziare MazeGenerator(width, height, seed), passare i
+      parametri a generate(perfect, entry, exit), accedere a grid e
+      solve() (il docstring di mazegen.py mostra l'esempio).
+- Collegamento col Makefile: install mette i tool (pip install),
+  build fa il pacchetto (python3 -m build).
+
 ## 4.6 Le trappole della difesa
 
 - Mai crash: anche Ctrl+C è gestito (uscita 0); l'ultimo except
