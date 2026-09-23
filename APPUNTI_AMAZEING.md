@@ -2435,6 +2435,49 @@ caratteri.
   senza la cancellata i disegni si accatasterebbero uno sotto
   l'altro".
 
+### Approfondimento: i codici ANSI dei colori (RED e compagnia)
+
+- COME SI LEGGE: `RED: str = "\033[31m"` → "la costante RED, di tipo
+  stringa, vale la stringa ESC [ 31 m".
+- La stringa ha 5 caratteri (byte veri: 1b 5b 33 31 6d):
+  - `\033`: il carattere ESC (27) — come con CLEAR: "ORDINE in
+    arrivo";
+  - `[`: l'ordine comincia qui;
+  - `3` `1`: DUE caratteri '3' e '1' — testo, NON il numero 31: è il
+    codice del colore che il terminale legge, come un modulo da
+    compilare;
+  - `m`: fine dell'ordine: "modifica l'aspetto del testo" (SGR).
+- La famiglia dei codici:
+  - 30-37 = colore del TESTO: 30 nero, 31 rosso, 32 verde, 33 giallo,
+    34 blu, 35 magenta, 36 ciano, 37 bianco;
+  - 40-47 = colore dello SFONDO (stessi colori + 40: WALL_BGS usa
+    41, 44, 45, 46);
+  - 0 = spegni tutto (RESET); 49 = sfondo di default (NO_BG: spegne
+    SOLO lo sfondo, non il testo).
+- Come agisce — la penna: il codice non è un carattere visibile, è il
+  momento in cui prendi in mano la penna rossa. Tutto quello stampato
+  DOPO esce rosso finché non arriva un ordine contrario. Nel display
+  la stringa è INCOLLATA DAVANTI ai muri: print(wall_color + wall):
+  il terminale riceve prima "ESC[31m", poi i caratteri, e li scrive
+  tutti rossi. (Vista con cat -v: ^[[31mrosso^[[0m normale: il codice
+  sta in mezzo al testo, invisibile.)
+- Perché le COSTANTI: RED è una variabile NOSTRA (in cima a
+  display.py), un NOME per la stringa — il codice dice "stampa in
+  RED" invece di "stampa quell'accozzaglia". In C identico:
+  printf("\033[31mrosso\033[0m") — i codici ANSI sono del TERMINALE,
+  non del linguaggio.
+- ATTENZIONE onesta: `NORMAL: str = ""` è la stringa VUOTA: stampare
+  "" non fa niente, nessun ordine. Viene messa prima di I e O con
+  l'idea "qui scrivi senza colori", ma la stringa vuota NON spegne il
+  colore già acceso (per quello serve RESET): I e O escono del colore
+  dei muri. Cosmetico, non cambia nulla.
+- Risposta da evaluation: "RED è una costante che vale '\033[31m':
+  ESC[ apre un ordine ANSI, 31 è il codice del rosso, m chiude (SGR).
+  Il terminale non la mostra: da lì scrive rosso finché non arriva
+  \033[0m. Il display la incolla davanti ai caratteri del labirinto
+  (wall_color + wall): i muri escono del colore scelto, e il tasto 3
+  cambia quale stringa viene usata."
+
 ### _print_maze (righe 75-148): il disegno (teoria 1.7)
 
 - Se show_path è True → path = gen.solve() (il fuoco del 3.3, chiamato
