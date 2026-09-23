@@ -2796,6 +2796,21 @@ La scala della difesa ha 7 sezioni. Per ognuna: cosa fa l'evaluator,
 dove sta la risposta nel codice, cosa dire. I punti con ▼ sono quelli
 dove si scava di più.
 
+## Il set di consegna (i 10 pezzi, niente di più)
+
+- DA CONSEGNARE: a_maze_ing.py (il main), config_parser.py,
+  mazegen.py (generatore + solve, anche il modulo riusabile della
+  sezione 6), display.py, output_writer.py, Makefile (all/clean/
+  fclean/re/test: il subject lo chiede), config.txt (il programma si
+  lancia con lui e l'evaluator lo EDITA), README.md (istruzioni),
+  pyproject.toml (per la sezione 6: il build della wheel; e per far
+  funzionare `mypy .` senza pytest sulla macchina della scuola),
+  tests/ (i 3 file di test: config, mazegen, output_writer — con
+  `make test` sono tutti verdi).
+- DA NON CONSEGNARE (in locale, il .gitignore li esclude):
+  output_validator.py (strumento del subject), maze.txt (output di
+  un run), __pycache__/, .venv/.
+
 ## 4.1 Display e menu (sezione 2 della scala)
 
 - Esegue a_maze_ing.py col config di default → labirinto + menu.
