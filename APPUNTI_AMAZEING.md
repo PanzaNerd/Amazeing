@@ -2976,6 +2976,52 @@ python3 -m venv /tmp/venv2
 - Collegamento col Makefile: install mette i tool (pip install),
   build fa il pacchetto (python3 -m build).
 
+### Approfondimento: pip — il gestore di pacchetti
+
+- pip = "Pip Installs Packages": il GESTORE DI PACCHETTI di Python.
+  Programma PREDEFINITO che viaggia con Python (si lancia con
+  python3 -m pip: "chiedi a python3 di eseguire il modulo pip" — così
+  installa nel Python giusto, quello del venv).
+- Da dove scarica: PyPI (Python Package Index, pypi.org), il magazzino
+  online con ~500.000 pacchetti. Ci parla pip, non l'utente.
+- Cosa vuol dire "installare": copiare i file .py del pacchetto dentro
+  site-packages — LA cartella dove Python cerca quando si fa import
+  (nel venv: .venv/lib/.../site-packages/; ogni pacchetto ha la sua
+  cartella + una cartella .dist-info coi metadati, la stessa della
+  wheel). Da quel momento l'import funziona da qualunque programma.
+- In più fa da solo le DIPENDENZE (se un pacchetto ne richiede un
+  altro, lo installa: mccabe, pycodestyle, pyflakes sono dipendenze
+  di flake8; pluggy e iniconfig di pytest) e le versioni
+  (pip install x==1.2.3).
+- Analogia col C: in C non c'è l'equivalente standard — si scaricano
+  i sorgenti e si compila, o si usa il gestore del sistema. pip è
+  l'apt/brew del mondo Python.
+- NEL NOSTRO CASO, tre momenti precisi:
+  1. make install → pip install flake8 mypy pytest build: i 4
+     strumenti di sviluppo nel venv;
+  2. make build → python3 -m build: il modulo build (installato da
+     pip!) legge pyproject.toml e produce la wheel;
+  3. sezione 6 → pip install dist/mazegen-1.0.0-py3-none-any.whl:
+     copia il NOSTRO mazegen.py in site-packages → chiunque può fare
+     from mazegen import MazeGenerator.
+- Punto chiave per la difesa: il PROGRAMMA non usa pip — a_maze_ing
+  importa solo la libreria standard (sys, random, collections), zero
+  dipendenze esterne: gira su qualunque Python pulito. pip serve per
+  i tool di sviluppo e per rendere il NOSTRO modulo installabile
+  dagli altri (il requisito del cap. VI). Il blocco [project] del
+  pyproject.toml è scritto per pip/setuptools: nome, versione,
+  requires-python — pip lo legge per decidere se può installare.
+- Risposte pronte:
+  - "Cos'è pip?" Il gestore di pacchetti di Python: scarica da PyPI
+    e installa in site-packages.
+  - "Il programma dipende da pip?" No: solo libreria standard. pip
+    serve ai tool e all'installazione del modulo riusabile.
+  - "Come si installa il vostro modulo?" pip install
+    mazegen-1.0.0-py3-none-any.whl in un venv, poi from mazegen
+    import MazeGenerator.
+  - "Perché python3 -m pip e non pip?" Per installare nel Python del
+    venv, non in quello di sistema (bloccato da PEP 668).
+
 ## 4.6 Le trappole della difesa
 
 - Mai crash: anche Ctrl+C è gestito (uscita 0); l'ultimo except
