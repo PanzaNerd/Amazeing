@@ -2544,6 +2544,58 @@ caratteri.
 - I colori: wall_color si "accende" prima di ogni riga e RESET alla
   fine: i codici ANSI vanno spenti o colorerebbero tutto ciò che segue.
 
+### Approfondimento: path_n e path_w — a chi appartiene il muro attraversato
+
+- Il fine del procedimento: NIENTE generazione (il labirinto è già
+  costruito: questo loop gira solo nel display, quando si preme 2).
+  Il solve restituisce la lista delle CELLE; ma tra due celle
+  consecutive c'è un MURO da attraversare, e il disegno ha 1
+  carattere per muro. Il puntino verde deve cadere ESATTAMENTE su
+  quel carattere: le due liste sono il promemoria di DOVE.
+- Il loop non confronta "chi ha la Y più piccola": fa 4 DOMANDE in
+  fila (cascata), una per direzione del passo:
+  - y2 == y1 - 1 → "la seconda è una riga SOPRA?" → si SALE;
+  - y2 == y1 + 1 → "la seconda è una riga SOTTO?" → si SCENDE;
+  - x2 == x1 + 1 → "la seconda è una colonna a DESTRA?" → si va a
+    DESTRA;
+  - else → resta solo SINISTRA.
+- LA REGOLA UNICA dietro tutto: nel disegno ogni muro è disegnato
+  UNA volta sola e appartiene a UNA cella sola:
+  - il muro ORIZZONTALE tra due celle = il muro NORD della cella
+    SOTTO;
+  - il muro VERTICALE tra due celle = il muro OVEST della cella a
+    DESTRA.
+  (È la stessa lezione dell'import senza E: ogni muro è il N di
+  qualcuno o il W di qualcuno.)
+- Quindi il loop fa una cosa sola: "di chi è il muro che attraversiamo
+  in questo passo? Segna QUELLA cella nella lista giusta":
+  - SU → cella sotto = la PRIMA (la partenza) → path_n riceve
+    (x1, y1);
+  - GIÙ → cella sotto = la SECONDA (l'arrivo) → path_n riceve
+    (x2, y2);
+  - DESTRA → cella a destra = la SECONDA → path_w riceve (x2, y2);
+  - SINISTRA → cella a destra = la PRIMA → path_w riceve (x1, y1).
+- Traccia VERA (labirinto 6x4, seed 42, path da solve):
+  - passo 0: (0,0) -> (1,0) DESTRA → W di (1,0) → path_w
+  - passo 2: (2,0) -> (2,1) GIÙ → N di (2,1) → path_n
+  - passo 4: (3,1) -> (3,0) SU → il muro è orizzontale, la cella
+    sotto è (3,1) che è la PRIMA → path_n
+  - passo 8: (5,1) -> (4,1) SINISTRA → il muro è verticale, la cella
+    a destra è (5,1) che è la PRIMA → path_w
+  - alla fine: path_n = [(2,1), (3,1), (5,1), (4,2), (5,3)],
+    path_w = [(1,0), (2,0), (3,1), (4,0), (5,0), (5,1), (5,2)].
+- Poi i due loop del disegno, quando il muro è aperto (else),
+  domandano (x, y) in path_n / in path_w: sì → puntino verde, no →
+  spazio. Nel disegno vero i puntini stanno tutti sui muri
+  attraversati dalla catena.
+- Risposta da evaluation: "solve dà le celle, il display ha un
+  carattere per muro: il loop traduce ogni passo tra due celle nella
+  marcatura del muro attraversato. Siccome ogni muro è disegnato una
+  volta sola — come N della cella sotto o W della cella a destra —
+  per ogni passo si appende nella lista giusta la cella che possiede
+  quel muro; i loop del disegno poi mettono il puntino sui muri
+  marcati."
+
 ### _junction (righe 151-203): l'incrocio
 
 Guarda i 4 LATI del nodo (sinistra, destra, sopra, sotto) e sceglie il
