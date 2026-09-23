@@ -106,7 +106,7 @@ def _print_maze(gen: MazeGenerator, show_path: bool, wall_color: str,
                 wall = wall + "───"
             else:
                 if (x, y) in path_n:
-                    wall = wall + GREEN + " " + DOT + " " + wall_color
+                    wall = wall + GREEN + DOT + DOT + DOT + wall_color
                 else:
                     wall = wall + "   "
         wall = wall + _junction(gen, gen.width, y)
@@ -118,9 +118,9 @@ def _print_maze(gen: MazeGenerator, show_path: bool, wall_color: str,
                 line = line + "│"
             else:
                 if (x, y) in path_w:
-                    line = line + GREEN + " " + DOT + " " + wall_color
+                    line = line + GREEN + DOT + wall_color
                 else:
-                    line = line + "   "
+                    line = line + " "
             if (x, y) in gen.forty_two:
                 line = line + wall_bg + "   " + NO_BG + wall_color
             elif (x, y) == gen.entry:
@@ -128,7 +128,7 @@ def _print_maze(gen: MazeGenerator, show_path: bool, wall_color: str,
             elif (x, y) == gen.exit:
                 line = line + NORMAL + " O " + wall_color
             elif (x, y) in path:
-                line = line + GREEN + " " + DOT + " " + wall_color
+                line = line + GREEN + DOT + DOT + DOT + wall_color
             else:
                 line = line + "   "
         line = line + "│"
