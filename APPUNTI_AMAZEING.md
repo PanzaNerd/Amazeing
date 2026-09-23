@@ -2706,6 +2706,46 @@ conta come muro. La cascata di if: si controlla dal caso più pieno al
 più vuoto e il PRIMO che combacia vince (l'ordine conta!). Se nessun
 lato ha un muro → spazio.
 
+### Approfondimento: la costruzione riga per riga (il blocco dei due for + junction)
+
+- Il blocco costruisce la SCHERMATA INTERA: una riga di muri + una
+  riga di celle per OGNI riga del labirinto, più la riga di fondo:
+  2*height + 1 righe. Ogni riga è UNA stringa che cresce pezzo per
+  pezzo: wall = wall + ...
+- Anatomia della riga dei muri: GIUNTO + muro, GIUNTO + muro, ...,
+  GIUNTO finale (i giunti chiudono anche le estremità). Il giunto è
+  l'incrocio della griglia, il muro è il segmento orizzontale
+  ("─", spazio o puntino).
+- Il giunto fa 4 DOMANDE (dal nodo partono muri verso sinistra,
+  destra, sopra, sotto?) e la cascata va dal più pieno al più vuoto:
+  il PRIMO che combacia vince.
+- Traccia vera (6x4, seed 42), la riga y=0 cresce così:
+  '┌─' → '┌───' → '┌─────' → '┌─────┬─' → '┌─────┬───' →
+  '┌─────┬─────' → '┌─────┬─────┐'
+  - giunto (0,0): sin=F des=T su=F giù=T → ┌ (l'angolo in alto a
+    sinistra: niente a sinistra, niente sopra);
+  - giunto (1,0) e (2,0): solo sin e des → ─;
+  - giunto (3,0): giù=T (da lì scende il muro W di (3,0)) → ┬;
+  - giunto (6,0), il bordo destro: sin=T des=F giù=T → ┐.
+- Riga delle celle: muro W (│/spazio/puntino) + contenuto (I/O/42/
+  puntino/spazio) per ogni cella + bordo destro fisso │.
+- Riga di fondo: come la riga dei muri ma con y = height: le domande
+  cambiano — sin/des guardano i muri S dell'ultima riga, su guarda i
+  W dell'ultima riga, giù è sempre F (sotto il fondo non c'è niente).
+  Traccia: '└─' → '└───' → '└─────' → '└─────┴─' → '└─────┴───' →
+  '└─────┴─────' → '└─────┴─────┘' (il ┴ al giunto (3,4): sale il
+  muro W di (3,3)).
+- Perché i giunti servono: con 1 carattere per muro, un bivio a T
+  disegnato col simbolo sbagliato avrebbe un moncone di muro
+  fantasma o un buco. I cartelli giusti riproducono gli incroci
+  dell'esempio del subject.
+- Risposta da evaluation: "ogni riga di muri è una stringa costruita
+  come giunto+muro ripetuti; _junction guarda i 4 muri che si
+  incontrano al nodo della griglia e con una cascata di if dal caso
+  più pieno al più vuoto sceglie il simbolo giusto (┼ ┬ ┴ ├ ┤ ┌ ┐ └
+  ┘ ─ │); la riga di fondo usa y = height e guarda i muri S
+  dell'ultima riga."
+
 ### Chi è cosa
 
 | Nome | Predefinito o nostro |
