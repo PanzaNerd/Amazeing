@@ -1,3 +1,15 @@
+# output del programma (mai nel repo)
 maze.txt
+m.txt
+
+# artefatti Python
 __pycache__/
-.DS_Store
+.mypy_cache/
+.pytest_cache/
+.venv/
+build/
+dist/
+*.egg-info/
+
+# eccezione: il pacchetto costruito richiesto dal subject (capitolo VI)
+!mazegen-*.whl

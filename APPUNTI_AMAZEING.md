@@ -2796,20 +2796,26 @@ La scala della difesa ha 7 sezioni. Per ognuna: cosa fa l'evaluator,
 dove sta la risposta nel codice, cosa dire. I punti con ▼ sono quelli
 dove si scava di più.
 
-## Il set di consegna (i 10 pezzi, niente di più)
+## Il set di consegna (niente di più)
 
 - DA CONSEGNARE: a_maze_ing.py (il main), config_parser.py,
   mazegen.py (generatore + solve, anche il modulo riusabile della
-  sezione 6), display.py, output_writer.py, Makefile (all/clean/
-  fclean/re/test: il subject lo chiede), config.txt (il programma si
-  lancia con lui e l'evaluator lo EDITA), README.md (istruzioni),
-  pyproject.toml (per la sezione 6: il build della wheel; e per far
-  funzionare `mypy .` senza pytest sulla macchina della scuola),
-  tests/ (i 3 file di test: config, mazegen, output_writer — con
-  `make test` sono tutti verdi).
+  sezione 6), display.py, output_writer.py, Makefile (install/run/
+  debug/clean/lint/lint-strict: le regole del subject III.2),
+  config.txt (il programma si lancia con lui e l'evaluator lo
+  EDITA), README.md (tutte le sezioni del VII), pyproject.toml (il
+  build della wheel; e `mypy .` pulito senza pytest), tests/ (i 3
+  file di test — il subject III.3 dice "not submitted or graded",
+  li teniamo per noi: make test verde), .gitignore (richiesto da
+  III.3: esclude gli artefatti Python), .flake8 (minimo: esclude
+  solo .venv, cosi' `flake8 .` del subject resta pulito anche con un
+  venv dentro la cartella), mazegen-1.0.0-py3-none-any.whl (VI: "the
+  file must be located at the root of your git repository" — il
+  pacchetto costruito sta alla radice; l'evaluator lo RICOSTRUIRA'
+  comunque dalle sorgenti).
 - DA NON CONSEGNARE (in locale, il .gitignore li esclude):
   output_validator.py (strumento del subject), maze.txt (output di
-  un run), __pycache__/, .venv/.
+  un run), __pycache__/, .venv/, dist/ e build/.
 
 ## 4.1 Display e menu (sezione 2 della scala)
 
@@ -2884,6 +2890,11 @@ python3 -m venv /tmp/venv2
 - Da dire: pyproject.toml + setuptools fanno il pacchetto; mazegen.py
   è autonomo (non importa config, output né display): funziona
   installato da solo.
+- Il subject VI vuole anche il pacchetto costruito alla radice del
+  repo ("the file must be located at the root of your git
+  repository"): mazegen-1.0.0-py3-none-any.whl è committato lì, e
+  l'evaluator lo ricostruirà comunque dalle sorgenti (pyproject.toml
+  + mazegen.py).
 
 ## 4.6 Le trappole della difesa
 

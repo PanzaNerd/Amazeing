@@ -20,12 +20,12 @@ clean:
 	rm -rf __pycache__ .mypy_cache .pytest_cache build dist *.egg-info
 
 lint:
-	flake8 $(SOURCES) tests/
-	mypy $(SOURCES) --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
+	flake8 .
+	mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
 
 lint-strict:
-	flake8 $(SOURCES) tests/
-	mypy $(SOURCES) --strict
+	flake8 .
+	mypy . --strict
 
 test:
 	python3 -m pytest tests/ -v
