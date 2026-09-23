@@ -86,6 +86,46 @@ python3 -m pytest tests/test_config_parser.py -v         # solo il parser
 python3 -m pytest tests/test_output_writer.py::test_path_to_nesw_simple -v   # un singolo test
 ```
 
+### Approfondimento: pytest — il vigile dei test (cos'è, come becca gli errori)
+
+- pytest è un pacchetto PREDEFINITO (installato con pip, fa parte dei
+  tool di sviluppo): un PROGRAMMA che esegue i test. Si lancia con
+  python3 -m pytest (o make test). In C: l'equivalente non esiste di
+  serie — testi a mano col debugger o con un framework esterno.
+- Un TEST = una funzione con nome test_* in un file test_*.py. Dentro
+  fa due cose: PREPARA (costruisce l'input, es. un config in un file
+  temporaneo) e DOMANDA (una riga assert: la domanda vera e propria).
+  assert condizione = "se la condizione è falsa, ALZA la mano":
+  pytest raccoglie le mani alzate e alla fine fa il resoconto.
+- I 3 file della cartella tests/:
+  - test_config_parser.py (14 test): ogni test prepara un config e
+    domanda una cosa — es. test_lowercase_keys_ok domanda "le chiavi
+    minuscole sono accettate?", test_missing_key domanda "senza
+    PERFECT salta fuori ConfigError?" (e per questo usa
+    pytest.raises: "mi aspetto proprio QUESTO errore").
+  - test_mazegen.py (4 test): connettività del perfetto/non perfetto,
+    la soglia 9x6 del 42, i mattoncini tutti chiusi.
+  - test_output_writer.py (4 test): il formato del file e la
+    conversione del percorso in NESW.
+- PROVA VERA che i test servono (fatta davanti ai nostri occhi):
+  abbiamo ROTTO il parser (tolto il .lower() del PERFECT) e
+  make test ha subito segnalato 3 test rossi (test_valid_config,
+  test_unknown_keys_ignored, test_no_seed_is_none) — il bug delle
+  minuscole, quello che la scala valutava. Ripristinato il codice:
+  22 verdi in 0.01s. Ecco il valore: una modifica che rompe qualcosa
+  viene beccata in UN secondo, prima dell'evaluator.
+- Il subject III.3 dice "not submitted or graded": li teniamo per
+  NOI, come prova pronta alla mano se l'evaluator chiede una modifica
+  (cap. IX: "a brief modification... may occasionally be requested").
+- Chi è cosa: pytest = pacchetto predefinito (pip); assert = parola
+  chiave predefinita di Python; pytest.raises = strumento di pytest;
+  le funzioni test_* = NOSTRE.
+- Risposte pronte: "Cos'è pytest?" Il programma che esegue i test e
+  fa il resoconto dei fallimenti. "Cos'è un test?" Una funzione che
+  prepara un input e fa una domanda con assert. "A cosa vi servono?"
+  A beccare subito qualsiasi modifica che rompe il programma: li
+  abbiamo visti fermare un bug vero del parser.
+
 **Controlli di qualita'** (richiesti dal subject):
 
 ```bash
@@ -2829,6 +2869,13 @@ dove si scava di più.
 - DA NON CONSEGNARE (restano in locale, esclusi dai .gitignore):
   output_validator.py (strumento del subject, non nostro), maze.txt (output di
   un run), __pycache__/, .venv/, dist/ e build/.
+- LA CARTELLA DI PROVA: ~/Desktop/consegna_amazeing contiene ESATTAMENTE
+  i 14 pezzi (nient'altro): è ciò che si copia sulla macchina della
+  scuola. Lì è stata fatta la prova generale da zero: venv nuovo +
+  pip install flake8 mypy pytest build → flake8 . pulito → mypy .
+  --strict pulito → 22 test verdi → run con "q" (maze.txt scritto,
+  uscita pulita) → validator OK → wheel ricostruita. Dopo ogni
+  modifica al progetto: ricopiare i file cambiati anche lì.
 
 ## 4.1 Display e menu (sezione 2 della scala)
 
@@ -2903,6 +2950,13 @@ python3 -m venv /tmp/venv2
 - Da dire: pyproject.toml + setuptools fanno il pacchetto; mazegen.py
   è autonomo (non importa config, output né display): funziona
   installato da solo.
+- PROVATA DAVVERO (prova generale 2026-09-23): venv1 → install build
+  → ricostruita la wheel dalle sorgenti; venv2 → installata la wheel
+  → da una cartella QUALUNQUE (non quella del progetto):
+  import mazegen funziona e mazegen.__file__ punta a
+  venv2/lib/.../site-packages/mazegen.py (la prova che si usa il
+  modulo INSTALLATO, non il file del progetto). Stesso labirinto di
+  sempre con seed 42.
 - Il subject VI vuole anche il pacchetto costruito alla radice del
   repo ("the file must be located at the root of your git
   repository"): mazegen-1.0.0-py3-none-any.whl è committato lì, e
@@ -3028,6 +3082,12 @@ python3 -m venv /tmp/venv2
   Exception copre tutto. La scala dà 0 a un programma che termina in
   modo inatteso.
 - Non modificare nessun file se non config.txt.
+- TRAPPOLA SCOVATA ALLA PROVA GENERALE: se l'evaluator crea un venv
+  DENTRO la cartella (python3 -m venv venv), `flake8 .` lo scansiona
+  e fallisce con migliaia di errori di site-packages. Risolta: il
+  .flake8 esclude sia .venv che venv e il pyproject [tool.mypy]
+  esclude "venv". Se l'evaluator usa un altro nome... fa parte delle
+  sue scelte: i due nomi canonici sono coperti.
 - La scala premia chi spiega: usa le metafore (talpa, piccone,
   fuoco) e le tracce riga per riga degli appunti.
 - Bonus (sezione 7): facoltativi, non ne abbiamo — non prometterne.

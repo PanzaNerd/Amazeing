@@ -125,6 +125,6 @@ Tools: flake8, mypy, pytest, build, git.
 - [Depth-first search](https://en.wikipedia.org/wiki/Depth-first_search)
 - [Breadth-first search](https://en.wikipedia.org/wiki/Breadth-first_search)
 
-AI was used for: structuring the project into modules, writing and
-reviewing the code, drafting this README. All AI-generated content was
-reviewed and understood before inclusion.
+AI was used for: structuring the project into modules,
+reviewing the code, drafting this README. All AI-generated piece of code was
+reviewed line by line and understood before inclusion.
