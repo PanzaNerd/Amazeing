@@ -2950,6 +2950,43 @@ python3 -m venv /tmp/venv2
 - Da dire: pyproject.toml + setuptools fanno il pacchetto; mazegen.py
   è autonomo (non importa config, output né display): funziona
   installato da solo.
+### Approfondimento: perché un modulo riusabile (la direzione delle frecce)
+
+- La generazione del labirinto è la PARTE PREZIOSA (l'algoritmo);
+  parser e display sono solo la pelle di QUESTO programma. Il cap. VI
+  vuole che la parte preziosa possa vivere in progetti futuri (un
+  videogioco, un simulatore...) senza portarsi dietro config.txt, il
+  menu e il file di output. In C: la libreria maze.c compilata una
+  volta e linkata da qualunque programma; in Python: mazegen.py +
+  pip install.
+- LA REGOLA D'ORO: nessuna dipendenza dal programma che lo usa.
+  Prova 1: gli UNICI import di mazegen.py sono `import random` e
+  `from collections import deque` (libreria standard): non sa nemmeno
+  che config.txt, display e output_writer esistono — cancellandoli
+  tutti, lui continua a funzionare identico. Prova 2: gli altri file
+  importano LUI (a_maze_ing: import mazegen; display: from mazegen
+  import ...), mai il contrario: la freccia va in una sola
+  direzione.
+- PROVA VERA del riuso (fatta da /tmp, fuori dal progetto, con la
+  SOLA wheel installata): un "progetto futuro" ha importato mazegen
+  (mazegen.__file__ → site-packages del venv), ha generato un 12x8
+  NON perfetto con seed 7, ha contato i vicoli ciechi (celle con 3
+  muri: 10) e ha chiesto il percorso — senza aprire nessun altro
+  nostro file.
+- IL CONTRATTO (l'intero manuale d'uso, 5 righe, le stesse che il
+  cap. VI obbliga a documentare e che stanno nel docstring e nel
+  README): from mazegen import MazeGenerator; gen =
+  MazeGenerator(width, height, seed) [1. istanzia]; gen.generate(
+  perfect, entry, exit) [2. parametri]; gen.grid e gen.solve()
+  [3. struttura e soluzione]. Un futuro programmatore legge il
+  docstring e usa il generatore senza aprire nient'altro (in C: il
+  docstring = l'header .h con le firme).
+- Risposte pronte: "Perché un modulo riusabile?" Il generatore è la
+  parte preziosa, deve poter essere importato in progetti futuri
+  (cap. VI). "Come fa a funzionare da solo?" Importa solo random e
+  collections; gli altri importano lui, mai il contrario. "Come si
+  usa?" Istanzio, passo i parametri, leggo grid e solve().
+
 - PROVATA DAVVERO (prova generale 2026-09-23): venv1 → install build
   → ricostruita la wheel dalle sorgenti; venv2 → installata la wheel
   → da una cartella QUALUNQUE (non quella del progetto):
