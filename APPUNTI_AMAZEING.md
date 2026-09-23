@@ -3029,6 +3029,15 @@ python3 -m venv /tmp/venv2
       solve() (il docstring di mazegen.py mostra l'esempio).
 - Collegamento col Makefile: install mette i tool (pip install),
   build fa il pacchetto (python3 -m build).
+- CHI FA COSA (per non confondersi): il Makefile NON crea il venv e
+  NON installa il pacchetto — il venv lo crea l'evaluator (o noi)
+  con python3 -m venv; il pacchetto è già committato alla radice.
+  Le 5 regole del Makefile (install/run/debug/clean/lint) sono quelle
+  obbligatorie del subject III.2: install = il corriere porta i 4
+  tool; build = costruisce la scatola. Le metafore: pacchetto =
+  scatola di biscotti (dentro il modulo, sopra l'etichetta);
+  wheel = la scatola già sigillata; venv = una seconda cucina
+  separata; pip = il corriere che porta le scatole in site-packages.
 
 ### Approfondimento: pip — il gestore di pacchetti
 
