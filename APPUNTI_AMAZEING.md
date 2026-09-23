@@ -2672,6 +2672,31 @@ I tre stadi, col labirinto VERO della traccia (6x4, seed 42):
 +---+---+---+---+---+---+
 ```
 
+### Come vengono riempite e consumate le due liste
+
+- RIEMPIMENTO: il loop prende il path A COPPIE consecutive e per ogni
+  coppia risponde a UNA domanda (si sale? si scende? si va a destra?
+  a sinistra?) e appende UNA cella a UNA lista — la cella che
+  POSSiede il muro attraversato. Contenuto finale del labirinto 6x4
+  (12 passi):
+  - path_n = [(2,1), (3,1), (5,1), (4,2), (5,3)] → 5 muri ORIZZONTALI
+  - path_w = [(1,0), (2,0), (3,1), (4,0), (5,0), (5,1), (5,2)] → 7
+    muri VERTICALI
+  - 5 + 7 = 12: ogni passo marca esattamente un muro.
+- CONSUMO: le liste da sole non disegnano niente: sono il promemoria
+  che i due loop del disegno consultano. Quando il disegno trova un
+  muro APERTO fa UNA domanda: "la cella è nella lista?" Sì → puntino
+  verde, no → spazio.
+- Riga dei muri SOPRA la riga 1 (muri N, labirinto vero):
+  (0,1) chiuso → "─"; (1,1) chiuso; (2,1) aperto e in path_n →
+  puntino; (3,1) aperto e in path_n → puntino; (4,1) chiuso; (5,1)
+  aperto e in path_n → puntino.
+- Riga delle CELLE 1 (muri W): (1,1) aperto ma NON in path_w →
+  spazio (il percorso non passa di lì!); (3,1) e (5,1) aperti e in
+  path_w → puntini; gli altri chiusi → "│".
+- Questo è il dettaglio che spiega tutto: NON basta che il muro sia
+  aperto — il puntino va solo dove il percorso passa davvero.
+
 ### _junction (righe 151-203): l'incrocio
 
 Guarda i 4 LATI del nodo (sinistra, destra, sopra, sotto) e sceglie il
