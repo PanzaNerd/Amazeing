@@ -1,9 +1,11 @@
 
-"""Visualizzazione del labirinto nel terminale (ASCII minimale, interattivo).
+"""Visualizzazione del labirinto nel terminale (ASCII, interattivo).
 
-Ogni cella occupa UN carattere e ogni muro UN carattere: '─'
-orizzontali, '│' verticali, incroci '┼'. Un labirinto 20x15 e' largo
-41 caratteri.
+Ogni cella occupa TRE caratteri e ogni muro orizzontale TRE: '───'
+orizzontali, '│' verticali, incroci '┼'. Le celle larghe 3 rendono le
+proporzioni vere: i caratteri del terminale sono alti il doppio della
+larghezza, con 1x1 il labirinto uscirebbe stirato in verticale. Un
+labirinto 20x15 e' largo 61 caratteri.
 """
 
 from mazegen import N, S, W, MazeGenerator
@@ -68,7 +70,7 @@ def run(gen: MazeGenerator) -> None:
 
 def _print_maze(gen: MazeGenerator, show_path: bool, wall_color: str,
                 wall_bg: str) -> None:
-    """Disegna il labirinto minimale: 1 cella = 1 carattere.
+    """Disegna il labirinto: 1 cella = 3 caratteri, 1 muro = 3.
 
     Muri '─' e '│' con incroci giusti ('┼', '┬', '┴', '├', '┤', '┌',
     '┐', '└', '┘'). Le celle del pattern "42" sono quadratini PIENI
@@ -101,12 +103,12 @@ def _print_maze(gen: MazeGenerator, show_path: bool, wall_color: str,
         for x in range(gen.width):
             wall = wall + _junction(gen, x, y)
             if (gen.grid[y][x] & N) != 0:
-                wall = wall + "─"
+                wall = wall + "───"
             else:
                 if (x, y) in path_n:
-                    wall = wall + GREEN + DOT + wall_color
+                    wall = wall + GREEN + " " + DOT + " " + wall_color
                 else:
-                    wall = wall + " "
+                    wall = wall + "   "
         wall = wall + _junction(gen, gen.width, y)
         print(wall_color + wall)
 
@@ -116,19 +118,19 @@ def _print_maze(gen: MazeGenerator, show_path: bool, wall_color: str,
                 line = line + "│"
             else:
                 if (x, y) in path_w:
-                    line = line + GREEN + DOT + wall_color
+                    line = line + GREEN + " " + DOT + " " + wall_color
                 else:
-                    line = line + " "
+                    line = line + "   "
             if (x, y) in gen.forty_two:
-                line = line + wall_bg + " " + NO_BG + wall_color
+                line = line + wall_bg + "   " + NO_BG + wall_color
             elif (x, y) == gen.entry:
-                line = line + NORMAL + "I" + wall_color
+                line = line + NORMAL + " I " + wall_color
             elif (x, y) == gen.exit:
-                line = line + NORMAL + "O" + wall_color
+                line = line + NORMAL + " O " + wall_color
             elif (x, y) in path:
-                line = line + GREEN + DOT + wall_color
+                line = line + GREEN + " " + DOT + " " + wall_color
             else:
-                line = line + " "
+                line = line + "   "
         line = line + "│"
         print(wall_color + line)
 
@@ -136,9 +138,9 @@ def _print_maze(gen: MazeGenerator, show_path: bool, wall_color: str,
     for x in range(gen.width):
         bottom = bottom + _junction(gen, x, gen.height)
         if (gen.grid[gen.height - 1][x] & S) != 0:
-            bottom = bottom + "─"
+            bottom = bottom + "───"
         else:
-            bottom = bottom + " "
+            bottom = bottom + "   "
     bottom = bottom + _junction(gen, gen.width, gen.height)
     print(wall_color + bottom)
     print(RESET)

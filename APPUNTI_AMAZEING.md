@@ -1067,10 +1067,11 @@ se y aumenta → S.
 ## 1.7 Il display interattivo
 
 Il labirinto si mostra nel terminale in **stile minimale pulito: 1
-cella = 1 carattere**, muri `─` orizzontali e `│` verticali con **gli
-incroci giusti** (`┼`, `┬`, `┴`, `├`, `┤`, `┌`, `┐`, `└`, `┘`): la
-struttura si legge come un labirinto vero. Un labirinto 20x15 è largo
-41 caratteri. Lo sfondo NON viene forzato: vale il tema del
+cella = 3 caratteri**, muri `───` orizzontali e `│` verticali con
+**gli incroci giusti** (`┼`, `┬`, `┴`, `├`, `┤`, `┌`, `┐`, `└`, `┘`):
+la struttura si legge come un labirinto vero, con le proporzioni
+giuste. Un labirinto 20x15 è largo 61 caratteri. Lo sfondo NON viene
+forzato: vale il tema del
 terminale. Sotto il labirinto c'è un **menu numerato in INGLESE**
 dentro una cornice (tutto il programma è in inglese, come il subject):
 `1) Regenerate maze` (richiama generate con gli stessi parametri),
@@ -1087,18 +1088,18 @@ mattoncini restano isole chiuse, quindi 4 e 2 si leggono lo stesso).
 **Il muro esterno del labirinto è completamente chiuso**: entry ed
 exit sono celle marcate dentro il bordo, non aperture.
 
-### Perché il labirinto sembra alto e stretto?
+### Perché le celle sono larghe 3 caratteri (e prima sembrava alto)
 
-Il labirinto 20x15 è più LARGO che alto in celle (20 colonne, 15
-righe), ma a schermo sembra il contrario. Il motivo: i caratteri del
-terminale non sono quadrati — un carattere è circa 2 volte più ALTO
-che largo. Con 1 cella = 1 carattere, 20 caratteri in orizzontale
-occupano meno spazio visivo di 15 righe in verticale → il labirinto
-appare alto e stretto.
-
-Non è un bug: è l'effetto ottico della griglia di caratteri. Per
-farlo sembrare "sdraiato" basta aumentare WIDTH nel config (es.
-WIDTH=40 HEIGHT=15): nel codice non cambia nulla.
+I caratteri del terminale non sono quadrati: uno è circa 2 volte più
+ALTO che largo. Se ogni cella fosse 1 carattere largo e 1 alto (1x1),
+il labirinto uscirebbe stirato in verticale: 20 colonne occuperebbero
+meno spazio visivo di 15 righe. Per questo ogni cella è larga 3
+caratteri e alta 1: il rettangolo 3x1 compensa l'altezza del
+carattere e il labirinto appare con le proporzioni vere, come il
+rendering d'esempio del subject. Il muro orizzontale è `───`, il
+verticale resta `│` (è già verticale, non va allargato). La modifica
+tocca SOLO _print_maze: le stringhe del disegno (1 carattere → 3), la
+logica non cambia.
 
 ## 1.8 Il main e la gestione errori
 
@@ -2322,8 +2323,8 @@ vengono definite.
 ### Cos'è
 
 La tappa E (teoria 1.7): disegna il labirinto e gestisce il menu. Una
-cella = 1 carattere e un muro = 1 carattere: un 20x15 è largo 41
-caratteri.
+cella = 3 caratteri e un muro orizzontale = 3: un 20x15 è largo
+61 caratteri.
 
 ### All'import (righe 9-28)
 
@@ -2544,7 +2545,7 @@ caratteri.
   della partenza. Servono perché il puntino si disegna SUL muro
   attraversato.
 - Il triplo for: per ogni riga y: prima la RIGA DEI MURI (wall): per
-  ogni x il giunto (_junction) + il muro N: chiuso → "─"; aperto ma
+  ogni x il giunto (_junction) + il muro N: chiuso → "───"; aperto ma
   attraversato dal percorso → puntino verde; altrimenti spazio. Poi la
   RIGA DELLE CELLE (line): per ogni x il muro W (│ / puntino / spazio)
   + il CONTENUTO: mattoncino del 42 → sfondo colorato (il blocco
@@ -2698,7 +2699,7 @@ I tre stadi, col labirinto VERO della traccia (6x4, seed 42):
   muro APERTO fa UNA domanda: "la cella è nella lista?" Sì → puntino
   verde, no → spazio.
 - Riga dei muri SOPRA la riga 1 (muri N, labirinto vero):
-  (0,1) chiuso → "─"; (1,1) chiuso; (2,1) aperto e in path_n →
+  (0,1) chiuso → "───"; (1,1) chiuso; (2,1) aperto e in path_n →
   puntino; (3,1) aperto e in path_n → puntino; (4,1) chiuso; (5,1)
   aperto e in path_n → puntino.
 - Riga delle CELLE 1 (muri W): (1,1) aperto ma NON in path_w →
@@ -2730,8 +2731,9 @@ lato ha un muro → spazio.
   destra, sopra, sotto?) e la cascata va dal più pieno al più vuoto:
   il PRIMO che combacia vince.
 - Traccia vera (6x4, seed 42), la riga y=0 cresce così:
-  '┌─' → '┌───' → '┌─────' → '┌─────┬─' → '┌─────┬───' →
-  '┌─────┬─────' → '┌─────┬─────┐'
+  '┌───' → '┌───────' → '┌───────────' → '┌───────────┬───' →
+  '┌───────────┬───────' → '┌───────────┬───────────' →
+  '┌───────────┬───────────┐'
   - giunto (0,0): sin=F des=T su=F giù=T → ┌ (l'angolo in alto a
     sinistra: niente a sinistra, niente sopra);
   - giunto (1,0) e (2,0): solo sin e des → ─;
@@ -2742,10 +2744,11 @@ lato ha un muro → spazio.
 - Riga di fondo: come la riga dei muri ma con y = height: le domande
   cambiano — sin/des guardano i muri S dell'ultima riga, su guarda i
   W dell'ultima riga, giù è sempre F (sotto il fondo non c'è niente).
-  Traccia: '└─' → '└───' → '└─────' → '└─────┴─' → '└─────┴───' →
-  '└─────┴─────' → '└─────┴─────┘' (il ┴ al giunto (3,4): sale il
+  Traccia: '└───' → '└───────' → '└───────────' → '└───────────┴───' →
+  '└───────────┴───────' → '└───────────┴───────────' →
+  '└───────────┴───────────┘' (il ┴ al giunto (3,4): sale il
   muro W di (3,3)).
-- Perché i giunti servono: con 1 carattere per muro, un bivio a T
+- Perché i giunti servono: con un carattere per NODO, un bivio a T
   disegnato col simbolo sbagliato avrebbe un moncone di muro
   fantasma o un buco. I cartelli giusti riproducono gli incroci
   dell'esempio del subject.
