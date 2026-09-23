@@ -2596,6 +2596,82 @@ caratteri.
   quel muro; i loop del disegno poi mettono il puntino sui muri
   marcati."
 
+### LA VISTA D'INSIEME: chi produce cosa (tre attori separati)
+
+```
+generate() (talpa+piccone) -> gen.grid = IL LABIRINTO
+solve()    (il fuoco)      -> path     = IL PERCORSO (solo celle)
+_print_maze                 -> la schermata = labirinto + puntini
+```
+
+_print_maze stampa il labirinto eccome — ma il labirinto viene SEMPRE
+da gen.grid (già fatto dalla talpa). Solve non genera nulla: quando si
+preme 2 viene chiamato dentro _print_maze solo per calcolare il
+percorso da disegnarci sopra.
+
+I tre stadi, col labirinto VERO della traccia (6x4, seed 42):
+
+1) Quello che si vede SEMPRE (menu appena aperto): solo i muri di
+   gen.grid.
+
+```
++---+---+---+---+---+---+
+| I         |           |
++---+---+   +   +---+   +
+|       |       |       |
++   +   +---+---+   +---+
+|   |           |       |
++   +---+---+   +---+   +
+|           |         O |
++---+---+---+---+---+---+
+```
+
+2) Quello che dà solve: i NUMERI sono l'ordine nella lista path, le *
+   sono i muri che ogni passo attraversa (messe lì da path_n e
+   path_w). Ogni * sta ESATTAMENTE tra due numeri consecutivi: quella
+   * È il muro attraversato in quel passo.
+
+```
++---+---+---+---+---+---+
+| I *  1*  2|  5*  6*  7|
++---+---+ * + * +---+ * +
+|       |  3*  4|  9*  8|
++   +   +---+---+ * +---+
+|   |           | 10* 11|
++   +---+---+   +---+ * +
+|           |         O |
++---+---+---+---+---+---+
+```
+
+   Leggila così: I -> 1 -> 2 scende (la * sopra il 3), 3 -> 4 a destra
+   (la * tra 3 e 4), 4 RISALE (la * sopra il 4), e così via fino a O.
+   Due zoom:
+   - passo 2 (il 2 scende sul 3): la * sta SOPRA il 3 → è il muro N
+     di (2,1), la cella SOTTO, che era la SECONDA del passo → path_n;
+   - passo 8 (l'8 va a sinistra sul 9): la * sta a SINISTRA dell'8 →
+     è il muro W di (5,1), la cella a DESTRA, che era la PRIMA del
+     passo → path_w. (La cella 8 ha due *: è in TUTTE E DUE le liste:
+     entrata dall'alto al passo 7 e uscita a sinistra al passo 8.)
+
+3) Il disegno finale (dopo aver premuto 2). Nel display vero i
+   puntini sono TUTTI verdi; qui le * sui muri restano * per far
+   vedere che sono DUE meccanismi diversi: i puntini sulle CELLE
+   nascono da (x, y) in path, i puntini sui MURI da (x, y) in path_n
+   / path_w. Senza il loop che stavamo studiando avremmo le celle
+   puntinate ma i muri attraversati resterebbero spazi vuoti.
+
+```
++---+---+---+---+---+---+
+| I * . * . | . * . * . |
++---+---+ * + * +---+ * +
+|       | . * . | . * . |
++   +   +---+---+ * +---+
+|   |           | . * . |
++   +---+---+   +---+ * +
+|           |         O |
++---+---+---+---+---+---+
+```
+
 ### _junction (righe 151-203): l'incrocio
 
 Guarda i 4 LATI del nodo (sinistra, destra, sopra, sotto) e sceglie il
