@@ -2395,6 +2395,46 @@ caratteri.
   - "q" → break → il while finisce → run finisce → si torna al main →
     il programma termina. (Il break visto nel solve del 3.3.)
 
+### Approfondimento: print(CLEAR) — l'ordine di cancellare lo schermo
+
+- COME SI LEGGE: `CLEAR: str = "\033[2J\033[H"` → "la costante CLEAR
+  vale la stringa ESC [ 2 J ESC [ H". E `print(CLEAR)` → "stampa la
+  stringa CLEAR".
+- Ma print non la MOSTRA: la CONSEGNA al terminale. Il carattere
+  `\033` è l'ESC (il numero 27, invisibile — i byte veri sono
+  1b 5b 32 4a 1b 5b 48) e significa: "attenzione terminale, quello
+  che segue NON è testo da scrivere, è un ORDINE".
+- I due ordini:
+  - `2J`: cancella TUTTO lo schermo (J = cancellare, 2 = tutto);
+  - `H`: porta il cursore a CASA, in alto a sinistra (da dove
+    comincia il titolo). Serve perché dopo il 2J la posizione del
+    cursore non è garantita.
+- Perché li mandiamo: il menu è un giro infinito che ridisegna il
+  labirinto ogni volta. Senza la cancellata, a ogni giro il labirinto
+  nuovo si stamperebbe SOTTO quello vecchio e la schermata si
+  accatasta (il labirinto cammina giù). CLEAR svuota e il cursore
+  torna su: ogni giro ridisegna la stessa schermata. In C: lo stesso
+  identico printf("\033[2J\033[H") — i codici ANSI sono del
+  TERMINALE, non del linguaggio.
+- IL BLOCCO VUOTO (visto lanciando make run): sì, è colpa di CLEAR.
+  Due casi:
+  - Terminale VERO (Terminal/iTerm del Mac, quello della scuola):
+    esegue l'ordine davvero — cancella e il labirinto appare subito
+    in alto. Il blocco non si vede MAI: cancellare e riscrivere
+    avviene nello stesso istante.
+  - Terminale che NON sa cancellare (il pannello dove gira Claude
+    Code o VS Code, o un output catturato): non può svuotare davvero
+    lo schermo, allora "cancella" a modo suo emettendo TANTE RIGHE
+    VUOTE. Le righe vuote spingono via il comando make run, e il
+    labirinto appare una pagina più in basso. Quel blocco vuoto È la
+    cancellata fatta male.
+- Non tocca la valutazione: l'evaluator lancia in un terminale vero.
+- Risposta da evaluation: "CLEAR è una stringa con due codici ANSI:
+  \033[2J cancella lo schermo e \033[H porta il cursore in alto a
+  sinistra; serve perché il menu ridisegna il labirinto ogni giro e
+  senza la cancellata i disegni si accatasterebbero uno sotto
+  l'altro".
+
 ### _print_maze (righe 75-148): il disegno (teoria 1.7)
 
 - Se show_path è True → path = gen.solve() (il fuoco del 3.3, chiamato
