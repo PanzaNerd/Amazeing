@@ -2395,6 +2395,50 @@ caratteri.
   - "q" → break → il while finisce → run finisce → si torna al main →
     il programma termina. (Il break visto nel solve del 3.3.)
 
+### Approfondimento: color_index — l'indice della giostra dei colori
+
+- COME SI LEGGE: `color_index = 0` → "la variabile color_index vale 0".
+- Chi è cosa: color_index è una VARIABILE NOSTRA, LOCALE di run (non
+  self.color_index: non è un attributo del generatore — è un affare
+  del menu, nasce dentro run e vive finché vive run). In C: una
+  variabile locale della funzione, int color_index = 0.
+- A cosa serve: è la POSIZIONE sulla giostra. WALL_COLORS è una lista
+  di 4 stringhe (RED, BLUE, MAGENTA, CYAN) e WALL_BGS le 4 stringhe
+  degli sfondi (41, 44, 45, 46). color_index dice QUALE delle 4
+  prendere: _print_maze riceve WALL_COLORS[color_index] (il colore
+  dei muri) e WALL_BGS[color_index] (lo sfondo del 42, lo stesso
+  colore: il blocco uniforme).
+- Perché 0: due motivi.
+  1. Le liste di Python (come gli array del C) contano da 0: l'indice
+     0 è il PRIMO elemento. color_index = 0 vuol dire "partiamo dal
+     primo colore della lista": WALL_COLORS[0] = RED — il menu si apre
+     sempre coi muri rossi.
+  2. La variabile deve ESISTERE prima di essere letta: al primo giro
+     del while, _print_maze legge subito WALL_COLORS[color_index]; se
+     color_index non fosse ancora nata, Python alzerebbe NameError.
+     Per questo nasce PRIMA del while, insieme a show_path.
+- La traccia della nascita (all'apertura del menu):
+
+  | riga | domanda | risposta | cosa succede |
+  |---|---|---|---|
+  | color_index = 0 | — | — | la variabile nasce e vale 0 |
+  | _print_maze(..., WALL_COLORS[color_index], ...) | quale stringa ha l'indice 0? | RED | i muri escono rossi |
+  | WALL_BGS[color_index] | quale sfondo ha l'indice 0? | \033[41m | il 42 col fondo rosso |
+
+- Come cambia (tasto 3): color_index = (color_index + 1) % 4: la
+  giostra 0→1→2→3→0. Il % len(WALL_COLORS) tiene l'indice DENTRO la
+  lista: 3+1 farebbe 4, ma WALL_COLORS[4] non esiste (IndexError): il
+  resto della divisione per 4 riporta a 0 (RED).
+- ATTENZIONE: la variabile nasce UNA volta sola, PRIMA del while. Se
+  nascesse DENTRO il while, a ogni giro verrebbe rimessa a 0 e la
+  giostra si bloccherebbe sul colore 1.
+- Risposta da evaluation: "color_index è l'indice della lista
+  WALL_COLORS: dice quale colore usare per i muri (e lo stesso indice
+  per WALL_BGS, lo sfondo del 42). Parte da 0 perché le liste contano
+  da 0 e 0 è il primo colore (RED), e nasce prima del ciclo perché al
+  primo giro viene già letta. Il tasto 3 la fa girare in tondo con
+  l'operatore %."
+
 ### Approfondimento: print(CLEAR) — l'ordine di cancellare lo schermo
 
 - COME SI LEGGE: `CLEAR: str = "\033[2J\033[H"` → "la costante CLEAR
