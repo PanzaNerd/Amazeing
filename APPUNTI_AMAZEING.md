@@ -3231,6 +3231,16 @@ cd /tmp
   file locale).
 - Nota 2: i venv di /tmp sono usa-e-getta: a fine sezione 6 si
   buttano via con rm -rf /tmp/venv1 /tmp/venv2.
+- Nota 3: PERCHÉ la sezione 6 si fa a MANO e non con le shortcut:
+  le shortcut (make lint/test/run) si usano eccome, per le sezioni
+  1-5. Ma nella sezione 6 i comandi SONO la dimostrazione: la scala
+  vuole vedere ogni passo (creo la cucina, ricostruisco la scatola,
+  la installo) — digitandoli uno a uno è tutto visibile. In più i
+  venv della sezione 6 stanno FUORI dal progetto (usa-e-getta),
+  mentre i bersagli del Makefile puntano alla cucina del progetto:
+  per cose una-tantum non si scrivono scorciatoie. Frase pronta:
+  "Le shortcut le uso per il lavoro quotidiano; nella sezione 6 i
+  comandi a mano sono voluti, così ogni passo è visibile." 
 
 ### Perché le cose si scrivono così (due lint, -m, venv/bin, cp, /tmp)
 
