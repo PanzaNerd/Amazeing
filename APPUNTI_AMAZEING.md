@@ -135,6 +135,42 @@ python3 -m pytest tests/test_output_writer.py::test_path_to_nesw_simple -v   # u
   A beccare subito qualsiasi modifica che rompe il programma: li
   abbiamo visti fermare un bug vero del parser.
 
+### Come si spiega all'evaluator (e quanto basta saperne)
+
+- LA SPIEGAZIONE in 3 frasi: "tests/ contiene i 22 test del progetto,
+  eseguiti con pytest. Ogni test prepara un input e fa una domanda
+  con assert: se la domanda è falsa, pytest lo segnala — make test dà
+  il verdetto in un secondo. Il subject III.3 li dice esplicitamente
+  'not submitted or graded': sono il nostro strumento di lavoro, non
+  fanno parte del programma."
+- IL CONFINE (cosa DEVI sapere e cosa no):
+  - DEVI: cos'è pytest (il vigile); cosa controllano i 3 file
+    (config: chiavi ed errori; mazegen: connettività e 42; output:
+    formato del file e NESW); come funziona UN test (prepara +
+    assert); che make test è verde.
+  - NON serve: il riga-per-riga di tutti i 22. Motivo onesto e
+    difendibile: il subject NON li valuta — sono uno strumento come
+    flake8; l'evaluator valuta il PROGRAMMA, e quello si sa riga per
+    riga.
+  - MA: se l'evaluator ne indica uno, lo si legge a voce lì per lì —
+    sono funzioni semplici e i pezzi (join, TemporaryDirectory,
+    assert) sono roba già studiata.
+- UN TEST LETTO A VOCE (test_lowercase_keys_ok), col pallino:
+  - content = "
+".join([...]) — prepara un config TUTTO minuscolo
+    (le 7 righe attaccate coi ritorni a capo);
+  - with tempfile.TemporaryDirectory() — apre una cartella
+    temporanea (esiste solo per il test, poi sparisce);
+  - config = parse_config(_write(...)) — scrive il config lì dentro
+    e lo dà al NOSTRO parser;
+  - assert config.width == 20 — DOMANDA: il parser ha accettato le
+    minuscole e ha letto 20? Se sì si passa oltre, se no test rosso;
+  - alla fine: 4 assert tutte vere → test verde.
+- FRASE PRONTA se insistono: "I test non sono in valutazione (subject
+  III.3): sono il nostro vigile. So cosa controllano e come
+  funzionano — se vuoi te ne leggo uno riga per riga." (E saperlo
+  fare davvero.)
+
 **Controlli di qualita'** (richiesti dal subject):
 
 ```bash
