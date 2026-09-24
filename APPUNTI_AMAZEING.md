@@ -2817,32 +2817,40 @@ dove si scava di più.
 
 ## Il set di consegna (niente di più)
 
-- DA CONSEGNARE: a_maze_ing.py (il main), config_parser.py,
-  mazegen.py (generatore + solve, anche il modulo riusabile della
-  sezione 6), display.py, output_writer.py, Makefile (le regole del
-  subject III.2 — install/run/debug/clean/lint — piu' env/test/
-  lint-strict/build/wheel, in ordine cronologico di utilizzo),
-  config.txt (il programma si lancia con lui e l'evaluator lo
-  EDITA), README.md (tutte le sezioni del VII), pyproject.toml (il
-  build della wheel; e `mypy .` pulito senza pytest), tests/ (i 3
-  file di test — il subject III.3 dice "not submitted or graded",
-  li teniamo per noi: make test verde), .gitignore (richiesto da
-  III.3: esclude gli artefatti Python), .flake8 (minimo: esclude
-  solo .venv, cosi' `flake8 .` del subject resta pulito anche con un
-  venv dentro la cartella), mazegen-1.0.0-py3-none-any.whl (VI: "the
-  file must be located at the root of your git repository" — il
-  pacchetto costruito sta alla radice; l'evaluator lo RICOSTRUIRA'
-  comunque dalle sorgenti).
-- DA NON CONSEGNARE (restano in locale, esclusi dai .gitignore):
-  output_validator.py (strumento del subject, non nostro), maze.txt (output di
-  un run), __pycache__/, .venv/, dist/ e build/.
-- LA CARTELLA DI PROVA: ~/Desktop/consegna_amazeing contiene ESATTAMENTE
-  i 14 pezzi (nient'altro): è ciò che si copia sulla macchina della
-  scuola. Lì è stata fatta la prova generale da zero: venv nuovo +
-  pip install flake8 mypy pytest build → flake8 . pulito → mypy .
-  --strict pulito → 22 test verdi → run con "q" (maze.txt scritto,
-  uscita pulita) → validator OK → wheel ricostruita. Dopo ogni
-  modifica al progetto: ricopiare i file cambiati anche lì.
+DA CONSEGNARE — 14 pezzi, ognuno col suo perché:
+
+| file | cos'è | perché serve |
+|---|---|---|
+| a_maze_ing.py | il main | si esegue il programma |
+| config_parser.py | legge e valida config.txt | sezione 3 della scala |
+| mazegen.py | generatore + solve | sezioni 5 e 6 (il modulo riusabile) |
+| display.py | il menu interattivo | sezione 2 |
+| output_writer.py | scrive il file esadecimale | sezione 4 |
+| Makefile | le scorciatoie (install/run/debug/clean/lint richieste da III.2, più env/test/lint-strict/build/wheel) | obbligatorio |
+| config.txt | la configurazione di esempio | il programma si lancia con lui; l'evaluator lo EDITA |
+| README.md | la documentazione | tutte le sezioni del cap. VII |
+| pyproject.toml | la ricetta del pacchetto | la wheel (sezione 6) + mypy pulito senza pytest |
+| tests/ | i 3 file di test | III.3 li dice "not graded": li teniamo per noi (make test verde) |
+| .gitignore | esclude gli artefatti Python | richiesto da III.3 |
+| .flake8 | esclude .venv e venv | flake8 . resta pulito anche con un venv dentro la cartella |
+| mazegen-1.0.0-py3-none-any.whl | la scatola pronta | VI: "the file must be located at the root of your git repository" |
+
+DA NON CONSEGNARE (restano in locale, esclusi dai .gitignore):
+
+- output_validator.py — lo strumento del subject, non nostro
+- maze.txt — l'output di un run
+- __pycache__/ — spazzatura
+- venv/ — la cucina (si rifà con make env)
+- dist/ e build/ — l'officina (si rifà con make build)
+
+LA CARTELLA DI PROVA:
+
+- ~/Desktop/consegna_amazeing contiene ESATTAMENTE i 14 pezzi,
+  nient'altro: è ciò che si copia sulla macchina della scuola.
+- Lì è stata superata la prova generale da zero: venv nuovo →
+  make install → flake8 pulito → mypy pulito → 22 test verdi → run
+  con "q" → validator OK → wheel ricostruita.
+- Dopo ogni modifica al progetto: ricopiare lì i file cambiati.
 
 ## I test e pytest (come spiegarli in difesa)
 
