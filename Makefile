@@ -52,3 +52,17 @@ wheel:
 # pulizia: cache e artefatti (NON tocca la cucina 'venv')
 clean:
 	rm -rf __pycache__ .mypy_cache .pytest_cache build dist *.egg-info
+
+# --------------------------------------------------------------
+# SEZIONE 6 (difesa): i comandi da digitare A MANO davanti
+# all'evaluator — sono la dimostrazione, NON bersagli di make.
+#   python3 -m venv /tmp/venv1             # 1) la FABBRICA
+#   /tmp/venv1/bin/pip install build       # 2) il tool nella fabbrica
+#   /tmp/venv1/bin/python -m build         # 3) RICOSTRUISCI la scatola
+#   python3 -m venv /tmp/venv2             # 4) il CLIENTE
+#   /tmp/venv2/bin/pip install dist/mazegen-1.0.0-py3-none-any.whl
+#                                          # 5) il cliente riceve la scatola
+#   cd /tmp                                # 6) esci dal progetto
+#   /tmp/venv2/bin/python -c "from mazegen import MazeGenerator; print('funziona')"
+#                                          #    la prova FUORI dal progetto
+# --------------------------------------------------------------
