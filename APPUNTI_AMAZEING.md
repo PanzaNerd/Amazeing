@@ -3010,6 +3010,30 @@ scatola dalle nostre sorgenti, venv2 la INSTALLA e la usa.
 - CHI FA COSA (per non confondersi): il Makefile NON crea il venv e
   NON installa il pacchetto — il venv lo crea l'evaluator (o noi)
   con python3 -m venv; il pacchetto è già committato alla radice.
+- ATTENZIONE ai due "venv" di make env: la ricetta è python3 -m venv
+  venv — il PRIMO venv è il MODULO di Python che crea gli ambienti
+  virtuali, il SECONDO è il NOME della cartella. Si crea UNA cucina
+  sola. (Come si legge: "python3, esegui il modulo venv, e chiama la
+  cartella 'venv'".)
+- IN TUTTA LA STORIA CI SONO TRE CUCINE, ognuna col suo mestiere:
+  - venv/ (nel progetto): fatta con make env, UNA volta; contiene i
+    4 STRUMENTI (flake8, mypy, pytest, build); usata TUTTI i giorni
+    dal Makefile (ogni ricetta chiama venv/bin/python).
+  - /tmp/venv1 (sezione 6): fatta a mano; contiene solo build;
+    usata UNA volta per RICOSTRUIRE la scatola davanti all'evaluator.
+  - /tmp/venv2 (sezione 6): fatta a mano; contiene la wheel
+    installata; usata UNA volta per PROVARE che si installa e
+    funziona.
+  Non è vero che "non vengono usate finché non si fanno i comandi a
+  mano": venv/ la usa il Makefile tutti i giorni; le due di /tmp non
+  ESISTONO nemmeno fino alla sezione 6.
+- PERCHÉ la sezione 6 ne vuole DUE: la dimostrazione ha due passi
+  separati. venv1 = la FABBRICA: ricostruisce il pacchetto dalle
+  sorgenti in un ambiente pulito (prova che chiunque può rifarlo).
+  venv2 = il CLIENTE: riceve la scatola finita e la usa (prova che
+  si installa e funziona da solo). In UNA cucina sola la prova
+  dell'installazione pulita non esisterebbe: il modulo potrebbe
+  funzionare solo perché le sorgenti sono lì vicino.
 
 ### Approfondimento: pip — il gestore di pacchetti
 
