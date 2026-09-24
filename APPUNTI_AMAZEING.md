@@ -3332,8 +3332,13 @@ cd /tmp
 
 - Nota 1: il build della sezione 6 va lanciato DENTRO la cartella del
   progetto (setuptools cerca lì pyproject.toml); la prova finale va
-  fatta FUORI (per dimostrare che si usa il modulo INSTALLATO, non il
-  file locale).
+  fatta FUORI. PERCHÉ il cd /tmp: quando si fa import, Python cerca
+  PRIMA nella cartella in cui si è in piedi e POI in site-packages.
+  Dentro il progetto c'è il nostro mazegen.py: l'import troverebbe
+  LUI, e la prova non proverebbe niente. Da /tmp il mazegen locale
+  non esiste: l'unico raggiungibile è quello INSTALLATO nella cucina
+  — e se funziona, la dimostrazione è completa (mazegen.__file__
+  punta a site-packages del venv2).
 - Nota 2: i venv di /tmp sono usa-e-getta: a fine sezione 6 si
   buttano via con rm -rf /tmp/venv1 /tmp/venv2.
 - Nota 3: PERCHÉ la sezione 6 si fa a MANO e non con le shortcut:
