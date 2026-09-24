@@ -3244,6 +3244,45 @@ scatola dalle nostre sorgenti, venv2 la INSTALLA e la usa.
   cima proprio per questo). In C: è lo stesso make dei progetti C —
   qui i bersagli non compilano, lanciano comandi Python.
 
+### Tutti i comandi da imparare (singoli e aggregati, uno per uno)
+
+PREPARAZIONE (una volta per macchina):
+
+| comando | cosa fa |
+|---|---|
+| make env = python3 -m venv venv | crea la cucina 'venv': una cartella con una copia di Python + pip, separata dal sistema |
+| make install = venv/bin/python -m pip install flake8 mypy pytest build | il corriere porta i 4 STRUMENTI nella cucina (li scarica da PyPI e li mette in site-packages) |
+
+LAVORO QUOTIDIANO:
+
+| comando | cosa fa |
+|---|---|
+| make run = venv/bin/python a_maze_ing.py config.txt | genera maze.txt e apre il display interattivo (1 rigenera, 2 percorso, 3 colori, q esce) |
+| make debug = venv/bin/python -m pdb a_maze_ing.py config.txt | esegue il programma dentro pdb, il debugger passo-passo (come gdb) |
+| make test = venv/bin/python -m pytest tests/ -v | il vigile esegue i 22 test e dà il verdetto |
+| make lint = venv/bin/python -m flake8 . POI venv/bin/python -m mypy . coi flag del subject | i controlli di stile (79 colonne ecc.) e di tipo (type hints), richiesti dal subject III.2 |
+| make lint-strict = gli stessi due, ma con mypy . --strict | la versione più severa dei controlli |
+| make build = venv/bin/python -m build | l'officina legge pyproject.toml e costruisce la scatola in dist/ |
+| make wheel = build + cp dist/mazegen-1.0.0-py3-none-any.whl . | costruisce E copia la scatola pronta alla radice (quella committata, cap. VI) |
+| make clean = rm -rf __pycache__ .mypy_cache .pytest_cache build dist *.egg-info | butta cache e artefatti (NON tocca la cucina) |
+
+SENZA SCORCIATOIA (locale, mai pushato):
+
+| comando | cosa fa |
+|---|---|
+| python3 output_validator.py maze.txt | il validatore del subject controlla la coerenza dei muri nel file appena generato |
+
+SEZIONE 6 (solo a mano, davanti all'evaluator):
+
+| comando | cosa fa |
+|---|---|
+| python3 -m venv /tmp/venv1 | crea la FABBRICA (usa-e-getta) |
+| /tmp/venv1/bin/pip install build | porta lo strumento build nella fabbrica |
+| /tmp/venv1/bin/python -m build | RICOSTRUISCE la scatola dalle nostre sorgenti (va lanciato DENTRO la cartella del progetto) |
+| python3 -m venv /tmp/venv2 | crea il CLIENTE (usa-e-getta) |
+| /tmp/venv2/bin/pip install dist/mazegen-1.0.0-py3-none-any.whl | il cliente riceve la scatola |
+| cd /tmp && /tmp/venv2/bin/python -c "from mazegen import MazeGenerator; print('funziona')" | la prova finale FUORI dal progetto: il modulo installato funziona ovunque |
+
 ### Le due sequenze da zero (i comandi ORIGINALI che make esegue)
 
 CASE 1 — STUDIO, nella cartella di lavoro, da zero:
