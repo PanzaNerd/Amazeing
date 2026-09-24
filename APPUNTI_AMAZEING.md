@@ -34,6 +34,7 @@ letto/elaborato → cosa ne deriva**. Niente codice, illustrazioni semplici.
        riempimento e consumo · costruzione riga per riga
 4. Preparazione alla difesa (la scala di valutazione)
    - Il set di consegna
+   - I test e pytest (come spiegarli)
    - 4.1 Display e menu · 4.2 Config: formato ed errori · 4.3 File di
      output · 4.4 Il generatore · 4.5 Modulo riusabile · 4.6 Le
      trappole della difesa
@@ -88,88 +89,8 @@ python3 -m pytest tests/test_config_parser.py -v         # solo il parser
 python3 -m pytest tests/test_output_writer.py::test_path_to_nesw_simple -v   # un singolo test
 ```
 
-### Approfondimento: pytest — il vigile dei test (cos'è, come becca gli errori)
-
-- pytest è un PROGRAMMA (un pacchetto installato con pip, come
-  flake8 e mypy): lo lanci, lui scorre i file tests/, esegue ogni
-  funzione test_* e per ognuna decide: la domanda (assert) è vera o
-  falsa? Alla fine stampa il resoconto: "22 passed" (tutto vero)
-  oppure "3 failed, 19 passed" (tre domande false → qualcosa è
-  rotto). Si lancia con python3 -m pytest o con make test. In C:
-  l'equivalente non esiste di serie — testi a mano col debugger o
-  con un framework esterno.
-- Come fa a TROVARE i test: cerca da solo i file test_*.py e dentro
-  le funzioni test_*: non serve iscriverli da nessuna parte. È per
-  questo che i file della cartella tests/ si chiamano così.
-- Un TEST = una funzione con nome test_* in un file test_*.py. Dentro
-  fa due cose: PREPARA (costruisce l'input, es. un config in un file
-  temporaneo) e DOMANDA (una riga assert: la domanda vera e propria).
-  assert condizione = "se la condizione è falsa, ALZA la mano":
-  pytest raccoglie le mani alzate e alla fine fa il resoconto.
-- I 3 file della cartella tests/:
-  - test_config_parser.py (14 test): ogni test prepara un config e
-    domanda una cosa — es. test_lowercase_keys_ok domanda "le chiavi
-    minuscole sono accettate?", test_missing_key domanda "senza
-    PERFECT salta fuori ConfigError?" (e per questo usa
-    pytest.raises: "mi aspetto proprio QUESTO errore").
-  - test_mazegen.py (4 test): connettività del perfetto/non perfetto,
-    la soglia 9x6 del 42, i mattoncini tutti chiusi.
-  - test_output_writer.py (4 test): il formato del file e la
-    conversione del percorso in NESW.
-- PROVA VERA che i test servono (fatta davanti ai nostri occhi):
-  abbiamo ROTTO il parser (tolto il .lower() del PERFECT) e
-  make test ha subito segnalato 3 test rossi (test_valid_config,
-  test_unknown_keys_ignored, test_no_seed_is_none) — il bug delle
-  minuscole, quello che la scala valutava. Ripristinato il codice:
-  22 verdi in 0.01s. Ecco il valore: una modifica che rompe qualcosa
-  viene beccata in UN secondo, prima dell'evaluator.
-- Il subject III.3 dice "not submitted or graded": li teniamo per
-  NOI, come prova pronta alla mano se l'evaluator chiede una modifica
-  (cap. IX: "a brief modification... may occasionally be requested").
-- Chi è cosa: pytest = pacchetto predefinito (pip); assert = parola
-  chiave predefinita di Python; pytest.raises = strumento di pytest;
-  le funzioni test_* = NOSTRE.
-- Risposte pronte: "Cos'è pytest?" Il programma che esegue i test e
-  fa il resoconto dei fallimenti. "Cos'è un test?" Una funzione che
-  prepara un input e fa una domanda con assert. "A cosa vi servono?"
-  A beccare subito qualsiasi modifica che rompe il programma: li
-  abbiamo visti fermare un bug vero del parser.
-
-### Come si spiega all'evaluator (e quanto basta saperne)
-
-- LA SPIEGAZIONE in 3 frasi: "tests/ contiene i 22 test del progetto,
-  eseguiti con pytest. Ogni test prepara un input e fa una domanda
-  con assert: se la domanda è falsa, pytest lo segnala — make test dà
-  il verdetto in un secondo. Il subject III.3 li dice esplicitamente
-  'not submitted or graded': sono il nostro strumento di lavoro, non
-  fanno parte del programma."
-- IL CONFINE (cosa DEVI sapere e cosa no):
-  - DEVI: cos'è pytest (il vigile); cosa controllano i 3 file
-    (config: chiavi ed errori; mazegen: connettività e 42; output:
-    formato del file e NESW); come funziona UN test (prepara +
-    assert); che make test è verde.
-  - NON serve: il riga-per-riga di tutti i 22. Motivo onesto e
-    difendibile: il subject NON li valuta — sono uno strumento come
-    flake8; l'evaluator valuta il PROGRAMMA, e quello si sa riga per
-    riga.
-  - MA: se l'evaluator ne indica uno, lo si legge a voce lì per lì —
-    sono funzioni semplici e i pezzi (join, TemporaryDirectory,
-    assert) sono roba già studiata.
-- UN TEST LETTO A VOCE (test_lowercase_keys_ok), col pallino:
-  - content = "
-".join([...]) — prepara un config TUTTO minuscolo
-    (le 7 righe attaccate coi ritorni a capo);
-  - with tempfile.TemporaryDirectory() — apre una cartella
-    temporanea (esiste solo per il test, poi sparisce);
-  - config = parse_config(_write(...)) — scrive il config lì dentro
-    e lo dà al NOSTRO parser;
-  - assert config.width == 20 — DOMANDA: il parser ha accettato le
-    minuscole e ha letto 20? Se sì si passa oltre, se no test rosso;
-  - alla fine: 4 assert tutte vere → test verde.
-- FRASE PRONTA se insistono: "I test non sono in valutazione (subject
-  III.3): sono il nostro vigile. So cosa controllano e come
-  funzionano — se vuoi te ne leggo uno riga per riga." (E saperlo
-  fare davvero.)
+Cosa è pytest e come si spiegano i test in difesa: vedi la
+parte 4 ("I test e pytest").
 
 **Controlli di qualita'** (richiesti dal subject):
 
@@ -2922,6 +2843,91 @@ dove si scava di più.
   --strict pulito → 22 test verdi → run con "q" (maze.txt scritto,
   uscita pulita) → validator OK → wheel ricostruita. Dopo ogni
   modifica al progetto: ricopiare i file cambiati anche lì.
+
+## I test e pytest (come spiegarli in difesa)
+
+### Approfondimento: pytest — il vigile dei test (cos'è, come becca gli errori)
+
+- pytest è un PROGRAMMA (un pacchetto installato con pip, come
+  flake8 e mypy): lo lanci, lui scorre i file tests/, esegue ogni
+  funzione test_* e per ognuna decide: la domanda (assert) è vera o
+  falsa? Alla fine stampa il resoconto: "22 passed" (tutto vero)
+  oppure "3 failed, 19 passed" (tre domande false → qualcosa è
+  rotto). Si lancia con python3 -m pytest o con make test. In C:
+  l'equivalente non esiste di serie — testi a mano col debugger o
+  con un framework esterno.
+- Come fa a TROVARE i test: cerca da solo i file test_*.py e dentro
+  le funzioni test_*: non serve iscriverli da nessuna parte. È per
+  questo che i file della cartella tests/ si chiamano così.
+- Un TEST = una funzione con nome test_* in un file test_*.py. Dentro
+  fa due cose: PREPARA (costruisce l'input, es. un config in un file
+  temporaneo) e DOMANDA (una riga assert: la domanda vera e propria).
+  assert condizione = "se la condizione è falsa, ALZA la mano":
+  pytest raccoglie le mani alzate e alla fine fa il resoconto.
+- I 3 file della cartella tests/:
+  - test_config_parser.py (14 test): ogni test prepara un config e
+    domanda una cosa — es. test_lowercase_keys_ok domanda "le chiavi
+    minuscole sono accettate?", test_missing_key domanda "senza
+    PERFECT salta fuori ConfigError?" (e per questo usa
+    pytest.raises: "mi aspetto proprio QUESTO errore").
+  - test_mazegen.py (4 test): connettività del perfetto/non perfetto,
+    la soglia 9x6 del 42, i mattoncini tutti chiusi.
+  - test_output_writer.py (4 test): il formato del file e la
+    conversione del percorso in NESW.
+- PROVA VERA che i test servono (fatta davanti ai nostri occhi):
+  abbiamo ROTTO il parser (tolto il .lower() del PERFECT) e
+  make test ha subito segnalato 3 test rossi (test_valid_config,
+  test_unknown_keys_ignored, test_no_seed_is_none) — il bug delle
+  minuscole, quello che la scala valutava. Ripristinato il codice:
+  22 verdi in 0.01s. Ecco il valore: una modifica che rompe qualcosa
+  viene beccata in UN secondo, prima dell'evaluator.
+- Il subject III.3 dice "not submitted or graded": li teniamo per
+  NOI, come prova pronta alla mano se l'evaluator chiede una modifica
+  (cap. IX: "a brief modification... may occasionally be requested").
+- Chi è cosa: pytest = pacchetto predefinito (pip); assert = parola
+  chiave predefinita di Python; pytest.raises = strumento di pytest;
+  le funzioni test_* = NOSTRE.
+- Risposte pronte: "Cos'è pytest?" Il programma che esegue i test e
+  fa il resoconto dei fallimenti. "Cos'è un test?" Una funzione che
+  prepara un input e fa una domanda con assert. "A cosa vi servono?"
+  A beccare subito qualsiasi modifica che rompe il programma: li
+  abbiamo visti fermare un bug vero del parser.
+
+### Come si spiega all'evaluator (e quanto basta saperne)
+
+- LA SPIEGAZIONE in 3 frasi: "tests/ contiene i 22 test del progetto,
+  eseguiti con pytest. Ogni test prepara un input e fa una domanda
+  con assert: se la domanda è falsa, pytest lo segnala — make test dà
+  il verdetto in un secondo. Il subject III.3 li dice esplicitamente
+  'not submitted or graded': sono il nostro strumento di lavoro, non
+  fanno parte del programma."
+- IL CONFINE (cosa DEVI sapere e cosa no):
+  - DEVI: cos'è pytest (il vigile); cosa controllano i 3 file
+    (config: chiavi ed errori; mazegen: connettività e 42; output:
+    formato del file e NESW); come funziona UN test (prepara +
+    assert); che make test è verde.
+  - NON serve: il riga-per-riga di tutti i 22. Motivo onesto e
+    difendibile: il subject NON li valuta — sono uno strumento come
+    flake8; l'evaluator valuta il PROGRAMMA, e quello si sa riga per
+    riga.
+  - MA: se l'evaluator ne indica uno, lo si legge a voce lì per lì —
+    sono funzioni semplici e i pezzi (join, TemporaryDirectory,
+    assert) sono roba già studiata.
+- UN TEST LETTO A VOCE (test_lowercase_keys_ok), col pallino:
+  - content = "
+".join([...]) — prepara un config TUTTO minuscolo
+    (le 7 righe attaccate coi ritorni a capo);
+  - with tempfile.TemporaryDirectory() — apre una cartella
+    temporanea (esiste solo per il test, poi sparisce);
+  - config = parse_config(_write(...)) — scrive il config lì dentro
+    e lo dà al NOSTRO parser;
+  - assert config.width == 20 — DOMANDA: il parser ha accettato le
+    minuscole e ha letto 20? Se sì si passa oltre, se no test rosso;
+  - alla fine: 4 assert tutte vere → test verde.
+- FRASE PRONTA se insistono: "I test non sono in valutazione (subject
+  III.3): sono il nostro vigile. So cosa controllano e come
+  funzionano — se vuoi te ne leggo uno riga per riga." (E saperlo
+  fare davvero.)
 
 ## 4.1 Display e menu (sezione 2 della scala)
 
