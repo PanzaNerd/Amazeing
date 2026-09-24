@@ -2945,70 +2945,75 @@ dove si scava di più.
 ## 4.5 Modulo riusabile (sezione 6) — PROVA DAL VIVO ▼
 
 L'evaluator chiede di RICOSTRUIRE il pacchetto e installarlo in un
-altro ambiente. Sequenza provata (provala anche tu prima della
-difesa):
-
-```
-python3 -m venv /tmp/venv1
-/tmp/venv1/bin/pip install build
-/tmp/venv1/bin/python -m build
-python3 -m venv /tmp/venv2
-/tmp/venv2/bin/pip install dist/mazegen-1.0.0-py3-none-any.whl
-/tmp/venv2/bin/python a_maze_ing.py config.txt
-```
+altro ambiente. I comandi esatti, in ordine, stanno nella sottosezione "Le due
+sequenze da zero" (qui sotto). In breve: venv1 RICOSTRUISCE la
+scatola dalle nostre sorgenti, venv2 la INSTALLA e la usa.
 
 - Da dire: pyproject.toml + setuptools fanno il pacchetto; mazegen.py
   è autonomo (non importa config, output né display): funziona
   installato da solo.
-### Approfondimento: perché un modulo riusabile (la direzione delle frecce)
 
-- La generazione del labirinto è la PARTE PREZIOSA (l'algoritmo);
-  parser e display sono solo la pelle di QUESTO programma. Il cap. VI
-  vuole che la parte preziosa possa vivere in progetti futuri (un
-  videogioco, un simulatore...) senza portarsi dietro config.txt, il
-  menu e il file di output. In C: la libreria maze.c compilata una
-  volta e linkata da qualunque programma; in Python: mazegen.py +
-  pip install.
-- LA REGOLA D'ORO: nessuna dipendenza dal programma che lo usa.
-  Prova 1: gli UNICI import di mazegen.py sono `import random` e
-  `from collections import deque` (libreria standard): non sa nemmeno
-  che config.txt, display e output_writer esistono — cancellandoli
-  tutti, lui continua a funzionare identico. Prova 2: gli altri file
-  importano LUI (a_maze_ing: import mazegen; display: from mazegen
-  import ...), mai il contrario: la freccia va in una sola
-  direzione.
-- PROVA VERA del riuso (fatta da /tmp, fuori dal progetto, con la
-  SOLA wheel installata): un "progetto futuro" ha importato mazegen
-  (mazegen.__file__ → site-packages del venv), ha generato un 12x8
-  NON perfetto con seed 7, ha contato i vicoli ciechi (celle con 3
-  muri: 10) e ha chiesto il percorso — senza aprire nessun altro
-  nostro file.
-- IL CONTRATTO (l'intero manuale d'uso, 5 righe, le stesse che il
-  cap. VI obbliga a documentare e che stanno nel docstring e nel
-  README): from mazegen import MazeGenerator; gen =
-  MazeGenerator(width, height, seed) [1. istanzia]; gen.generate(
-  perfect, entry, exit) [2. parametri]; gen.grid e gen.solve()
-  [3. struttura e soluzione]. Un futuro programmatore legge il
-  docstring e usa il generatore senza aprire nient'altro (in C: il
-  docstring = l'header .h con le firme).
-- Risposte pronte: "Perché un modulo riusabile?" Il generatore è la
-  parte preziosa, deve poter essere importato in progetti futuri
-  (cap. VI). "Come fa a funzionare da solo?" Importa solo random e
-  collections; gli altri importano lui, mai il contrario. "Come si
-  usa?" Istanzio, passo i parametri, leggo grid e solve().
+### Le 4 parole (pacchetto, wheel, venv, pip)
 
-- PROVATA DAVVERO (prova generale 2026-09-23): venv1 → install build
-  → ricostruita la wheel dalle sorgenti; venv2 → installata la wheel
-  → da una cartella QUALUNQUE (non quella del progetto):
-  import mazegen funziona e mazegen.__file__ punta a
-  venv2/lib/.../site-packages/mazegen.py (la prova che si usa il
-  modulo INSTALLATO, non il file del progetto). Stesso labirinto di
-  sempre con seed 42.
-- Il subject VI vuole anche il pacchetto costruito alla radice del
-  repo ("the file must be located at the root of your git
-  repository"): mazegen-1.0.0-py3-none-any.whl è committato lì, e
-  l'evaluator lo ricostruirà comunque dalle sorgenti (pyproject.toml
-  + mazegen.py).
+- Prima di tutto le parole, senza darle per scontate:
+  - PACCHETTO = una scatola di biscotti: dentro il modulo
+    (mazegen.py), sopra l'etichetta (nome, versione).
+  - WHEEL = la scatola già sigillata, pronta da installare (il file
+    mazegen-1.0.0-py3-none-any.whl, che è uno zip).
+  - VENV (ambiente virtuale) = una seconda CUCINA, separata dal
+    Python di sistema: ci installi dentro quello che vuoi senza
+    toccare nient'altro.
+  - PIP = il CORRIERE: porta le scatole dal magazzino (PyPI) alla
+    cucina giusta (site-packages).
+- CHI FA COSA (per non confondersi): il Makefile NON crea il venv e
+  NON installa il pacchetto — il venv lo crea l'evaluator (o noi)
+  con python3 -m venv; il pacchetto è già committato alla radice.
+
+### Approfondimento: pip — il gestore di pacchetti
+
+- pip = "Pip Installs Packages": il GESTORE DI PACCHETTI di Python.
+  Programma PREDEFINITO che viaggia con Python (si lancia con
+  python3 -m pip: "chiedi a python3 di eseguire il modulo pip" — così
+  installa nel Python giusto, quello del venv).
+- Da dove scarica: PyPI (Python Package Index, pypi.org), il magazzino
+  online con ~500.000 pacchetti. Ci parla pip, non l'utente.
+- Cosa vuol dire "installare": copiare i file .py del pacchetto dentro
+  site-packages — LA cartella dove Python cerca quando si fa import
+  (nel venv: .venv/lib/.../site-packages/; ogni pacchetto ha la sua
+  cartella + una cartella .dist-info coi metadati, la stessa della
+  wheel). Da quel momento l'import funziona da qualunque programma.
+- In più fa da solo le DIPENDENZE (se un pacchetto ne richiede un
+  altro, lo installa: mccabe, pycodestyle, pyflakes sono dipendenze
+  di flake8; pluggy e iniconfig di pytest) e le versioni
+  (pip install x==1.2.3).
+- Analogia col C: in C non c'è l'equivalente standard — si scaricano
+  i sorgenti e si compila, o si usa il gestore del sistema. pip è
+  l'apt/brew del mondo Python.
+- NEL NOSTRO CASO, tre momenti precisi:
+  1. make install → pip install flake8 mypy pytest build: i 4
+     strumenti di sviluppo nel venv;
+  2. make build → python3 -m build: il modulo build (installato da
+     pip!) legge pyproject.toml e produce la wheel;
+  3. sezione 6 → pip install dist/mazegen-1.0.0-py3-none-any.whl:
+     copia il NOSTRO mazegen.py in site-packages → chiunque può fare
+     from mazegen import MazeGenerator.
+- Punto chiave per la difesa: il PROGRAMMA non usa pip — a_maze_ing
+  importa solo la libreria standard (sys, random, collections), zero
+  dipendenze esterne: gira su qualunque Python pulito. pip serve per
+  i tool di sviluppo e per rendere il NOSTRO modulo installabile
+  dagli altri (il requisito del cap. VI). Il blocco [project] del
+  pyproject.toml è scritto per pip/setuptools: nome, versione,
+  requires-python — pip lo legge per decidere se può installare.
+- Risposte pronte:
+  - "Cos'è pip?" Il gestore di pacchetti di Python: scarica da PyPI
+    e installa in site-packages.
+  - "Il programma dipende da pip?" No: solo libreria standard. pip
+    serve ai tool e all'installazione del modulo riusabile.
+  - "Come si installa il vostro modulo?" pip install
+    mazegen-1.0.0-py3-none-any.whl in un venv, poi from mazegen
+    import MazeGenerator.
+  - "Perché python3 -m pip e non pip?" Per installare nel Python del
+    venv, non in quello di sistema (bloccato da PEP 668).
 
 ### pyproject.toml dalla A alla Z (il "Tom")
 
@@ -3074,17 +3079,56 @@ python3 -m venv /tmp/venv2
       istanziare MazeGenerator(width, height, seed), passare i
       parametri a generate(perfect, entry, exit), accedere a grid e
       solve() (il docstring di mazegen.py mostra l'esempio).
-- Collegamento col Makefile: install mette i tool (pip install),
-  build fa il pacchetto (python3 -m build).
-- CHI FA COSA (per non confondersi): il Makefile NON crea il venv e
-  NON installa il pacchetto — il venv lo crea l'evaluator (o noi)
-  con python3 -m venv; il pacchetto è già committato alla radice.
-  Le 5 regole del Makefile (install/run/debug/clean/lint) sono quelle
-  obbligatorie del subject III.2: install = il corriere porta i 4
-  tool; build = costruisce la scatola. Le metafore: pacchetto =
-  scatola di biscotti (dentro il modulo, sopra l'etichetta);
-  wheel = la scatola già sigillata; venv = una seconda cucina
-  separata; pip = il corriere che porta le scatole in site-packages.
+
+### Approfondimento: perché un modulo riusabile (la direzione delle frecce)
+
+- La generazione del labirinto è la PARTE PREZIOSA (l'algoritmo);
+  parser e display sono solo la pelle di QUESTO programma. Il cap. VI
+  vuole che la parte preziosa possa vivere in progetti futuri (un
+  videogioco, un simulatore...) senza portarsi dietro config.txt, il
+  menu e il file di output. In C: la libreria maze.c compilata una
+  volta e linkata da qualunque programma; in Python: mazegen.py +
+  pip install.
+- LA REGOLA D'ORO: nessuna dipendenza dal programma che lo usa.
+  Prova 1: gli UNICI import di mazegen.py sono `import random` e
+  `from collections import deque` (libreria standard): non sa nemmeno
+  che config.txt, display e output_writer esistono — cancellandoli
+  tutti, lui continua a funzionare identico. Prova 2: gli altri file
+  importano LUI (a_maze_ing: import mazegen; display: from mazegen
+  import ...), mai il contrario: la freccia va in una sola
+  direzione.
+- PROVA VERA del riuso (fatta da /tmp, fuori dal progetto, con la
+  SOLA wheel installata): un "progetto futuro" ha importato mazegen
+  (mazegen.__file__ → site-packages del venv), ha generato un 12x8
+  NON perfetto con seed 7, ha contato i vicoli ciechi (celle con 3
+  muri: 10) e ha chiesto il percorso — senza aprire nessun altro
+  nostro file.
+- IL CONTRATTO (l'intero manuale d'uso, 5 righe, le stesse che il
+  cap. VI obbliga a documentare e che stanno nel docstring e nel
+  README): from mazegen import MazeGenerator; gen =
+  MazeGenerator(width, height, seed) [1. istanzia]; gen.generate(
+  perfect, entry, exit) [2. parametri]; gen.grid e gen.solve()
+  [3. struttura e soluzione]. Un futuro programmatore legge il
+  docstring e usa il generatore senza aprire nient'altro (in C: il
+  docstring = l'header .h con le firme).
+- Risposte pronte: "Perché un modulo riusabile?" Il generatore è la
+  parte preziosa, deve poter essere importato in progetti futuri
+  (cap. VI). "Come fa a funzionare da solo?" Importa solo random e
+  collections; gli altri importano lui, mai il contrario. "Come si
+  usa?" Istanzio, passo i parametri, leggo grid e solve().
+
+- PROVATA DAVVERO (prova generale 2026-09-23): venv1 → install build
+  → ricostruita la wheel dalle sorgenti; venv2 → installata la wheel
+  → da una cartella QUALUNQUE (non quella del progetto):
+  import mazegen funziona e mazegen.__file__ punta a
+  venv2/lib/.../site-packages/mazegen.py (la prova che si usa il
+  modulo INSTALLATO, non il file del progetto). Stesso labirinto di
+  sempre con seed 42.
+- Il subject VI vuole anche il pacchetto costruito alla radice del
+  repo ("the file must be located at the root of your git
+  repository"): mazegen-1.0.0-py3-none-any.whl è committato lì, e
+  l'evaluator lo ricostruirà comunque dalle sorgenti (pyproject.toml
+  + mazegen.py).
 
 ### Il nuovo Makefile: dove lanciare cosa, quando il venv, uv, come si legge
 
@@ -3245,52 +3289,6 @@ L'ALBERO DELLE CARTELLE (dove sei e cosa stai facendo):
     ├── bin/python
     └── lib/python3.14/site-packages/mazegen.py  ← i biscotti installati
 ```
-
-### Approfondimento: pip — il gestore di pacchetti
-
-- pip = "Pip Installs Packages": il GESTORE DI PACCHETTI di Python.
-  Programma PREDEFINITO che viaggia con Python (si lancia con
-  python3 -m pip: "chiedi a python3 di eseguire il modulo pip" — così
-  installa nel Python giusto, quello del venv).
-- Da dove scarica: PyPI (Python Package Index, pypi.org), il magazzino
-  online con ~500.000 pacchetti. Ci parla pip, non l'utente.
-- Cosa vuol dire "installare": copiare i file .py del pacchetto dentro
-  site-packages — LA cartella dove Python cerca quando si fa import
-  (nel venv: .venv/lib/.../site-packages/; ogni pacchetto ha la sua
-  cartella + una cartella .dist-info coi metadati, la stessa della
-  wheel). Da quel momento l'import funziona da qualunque programma.
-- In più fa da solo le DIPENDENZE (se un pacchetto ne richiede un
-  altro, lo installa: mccabe, pycodestyle, pyflakes sono dipendenze
-  di flake8; pluggy e iniconfig di pytest) e le versioni
-  (pip install x==1.2.3).
-- Analogia col C: in C non c'è l'equivalente standard — si scaricano
-  i sorgenti e si compila, o si usa il gestore del sistema. pip è
-  l'apt/brew del mondo Python.
-- NEL NOSTRO CASO, tre momenti precisi:
-  1. make install → pip install flake8 mypy pytest build: i 4
-     strumenti di sviluppo nel venv;
-  2. make build → python3 -m build: il modulo build (installato da
-     pip!) legge pyproject.toml e produce la wheel;
-  3. sezione 6 → pip install dist/mazegen-1.0.0-py3-none-any.whl:
-     copia il NOSTRO mazegen.py in site-packages → chiunque può fare
-     from mazegen import MazeGenerator.
-- Punto chiave per la difesa: il PROGRAMMA non usa pip — a_maze_ing
-  importa solo la libreria standard (sys, random, collections), zero
-  dipendenze esterne: gira su qualunque Python pulito. pip serve per
-  i tool di sviluppo e per rendere il NOSTRO modulo installabile
-  dagli altri (il requisito del cap. VI). Il blocco [project] del
-  pyproject.toml è scritto per pip/setuptools: nome, versione,
-  requires-python — pip lo legge per decidere se può installare.
-- Risposte pronte:
-  - "Cos'è pip?" Il gestore di pacchetti di Python: scarica da PyPI
-    e installa in site-packages.
-  - "Il programma dipende da pip?" No: solo libreria standard. pip
-    serve ai tool e all'installazione del modulo riusabile.
-  - "Come si installa il vostro modulo?" pip install
-    mazegen-1.0.0-py3-none-any.whl in un venv, poi from mazegen
-    import MazeGenerator.
-  - "Perché python3 -m pip e non pip?" Per installare nel Python del
-    venv, non in quello di sistema (bloccato da PEP 668).
 
 ## 4.6 Le trappole della difesa
 
