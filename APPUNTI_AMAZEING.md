@@ -90,10 +90,17 @@ python3 -m pytest tests/test_output_writer.py::test_path_to_nesw_simple -v   # u
 
 ### Approfondimento: pytest — il vigile dei test (cos'è, come becca gli errori)
 
-- pytest è un pacchetto PREDEFINITO (installato con pip, fa parte dei
-  tool di sviluppo): un PROGRAMMA che esegue i test. Si lancia con
-  python3 -m pytest (o make test). In C: l'equivalente non esiste di
-  serie — testi a mano col debugger o con un framework esterno.
+- pytest è un PROGRAMMA (un pacchetto installato con pip, come
+  flake8 e mypy): lo lanci, lui scorre i file tests/, esegue ogni
+  funzione test_* e per ognuna decide: la domanda (assert) è vera o
+  falsa? Alla fine stampa il resoconto: "22 passed" (tutto vero)
+  oppure "3 failed, 19 passed" (tre domande false → qualcosa è
+  rotto). Si lancia con python3 -m pytest o con make test. In C:
+  l'equivalente non esiste di serie — testi a mano col debugger o
+  con un framework esterno.
+- Come fa a TROVARE i test: cerca da solo i file test_*.py e dentro
+  le funzioni test_*: non serve iscriverli da nessuna parte. È per
+  questo che i file della cartella tests/ si chiamano così.
 - Un TEST = una funzione con nome test_* in un file test_*.py. Dentro
   fa due cose: PREPARA (costruisce l'input, es. un config in un file
   temporaneo) e DOMANDA (una riga assert: la domanda vera e propria).
@@ -3180,6 +3187,64 @@ cd /tmp
   file locale).
 - Nota 2: i venv di /tmp sono usa-e-getta: a fine sezione 6 si
   buttano via con rm -rf /tmp/venv1 /tmp/venv2.
+
+### Perché le cose si scrivono così (due lint, -m, venv/bin, cp, /tmp)
+
+- PERCHÉ DUE LINT: il subject III.2 OBBLIGA la regola lint con quei
+  flag ESATTI (--warn-return-any --warn-unused-ignores
+  --ignore-missing-imports --disallow-untyped-defs
+  --check-untyped-defs) e raccomanda lint-strict (facoltativa) con
+  --strict. --strict = tutti i flag insieme, controllo PIÙ severo.
+  Noi li teniamo tutti e due: make lint = esattamente ciò che chiede
+  il subject; make lint-strict = la versione severa per noi.
+- PERCHÉ python3 -m flake8 e non flake8 da solo: -m = "chiedi A
+  questo python di eseguire il MODULO flake8". Senza -m il sistema
+  cercherebbe un programma di nome flake8 nel PATH — che senza venv
+  attivato punta al Python di sistema, dove flake8 non c'è (o è
+  un'altra versione). Con python3 -m usi SEMPRE il tool del python
+  che hai scelto tu.
+- PERCHÉ venv/bin/python: venv/bin/ è la cartella degli attrezzi
+  DELLA CUCINA (dentro ci sono python, pip e i tool installati).
+  Scrivere venv/bin/python = "usa il python della cucina" anche
+  senza attivarla. È questo che rende il Makefile autonomo:
+  funziona appena fatto make env, senza source/activate.
+- PERCHÉ cp dist/mazegen-...whl . : dist/ è la cartella dove
+  l'officina (build) lascia la scatola; il punto (.) è la cartella
+  in cui sei, la RADICE del progetto. Il cap. VI vuole il pacchetto
+  alla radice della repo → la copia fa esattamente quello (make
+  wheel = build + cp).
+- COSA SONO /tmp/venv1 e /tmp/venv2: /tmp è la cartella TEMPORANEA
+  del sistema (il suo contenuto si può buttare quando si vuole).
+  venv1 e venv2 sono due cucine usa-e-getta create DURANTE la
+  sezione 6: la prima per RICOSTRUIRE la scatola, la seconda per
+  INSTALLARLA e provarla. A fine sezione: rm -rf /tmp/venv1
+  /tmp/venv2.
+
+L'ALBERO DELLE CARTELLE (dove sei e cosa stai facendo):
+
+```
+~/Desktop/
+├── python repo/                          ← cartella di PIANIFICAZIONE (doc)
+│   └── Common_Core_2/
+│       └── python/AMAZEING/              ← LA CARTELLA DI STUDIO
+│           ├── a_maze_ing.py ... config.txt   (i file del programma)
+│           ├── tests/                    ← i 3 file di test
+│           ├── venv/                     ← LA CUCINA (fatta con make env)
+│           │   ├── bin/                  ← gli attrezzi: python, pip
+│           │   └── lib/python3.14/site-packages/  ← qui vivono i tool
+│           ├── dist/                     ← l'uscita dell'officina (build)
+│           │   └── mazegen-1.0.0-py3-none-any.whl
+│           └── mazegen-1.0.0-py3-none-any.whl   ← copia alla RADICE (make wheel)
+├── consegna_amazeing/                    ← la consegna PULITA (i 14 pezzi)
+└── amazeing_repo/                        ← mirror git degli appunti
+
+/tmp/                                     ← cartella temporanea del sistema
+├── venv1/                                ← cucina 1 della sezione 6
+│   └── bin/python                        ← con dentro lo strumento build
+└── venv2/                                ← cucina 2 della sezione 6
+    ├── bin/python
+    └── lib/python3.14/site-packages/mazegen.py  ← i biscotti installati
+```
 
 ### Approfondimento: pip — il gestore di pacchetti
 
