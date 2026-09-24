@@ -3408,25 +3408,30 @@ cd /tmp
 L'ALBERO DELLE CARTELLE (dove sei e cosa stai facendo):
 
 ```
-~/Desktop/
-├── python repo/                          ← cartella di PIANIFICAZIONE (doc)
-│   └── Common_Core_2/
-│       └── python/AMAZEING/              ← LA CARTELLA DI STUDIO
-│           ├── a_maze_ing.py ... config.txt   (i file del programma)
-│           ├── tests/                    ← i 3 file di test
-│           ├── venv/                     ← LA CUCINA (fatta con make env)
-│           │   ├── bin/                  ← gli attrezzi: python, pip
-│           │   └── lib/python3.14/site-packages/  ← qui vivono i tool
-│           ├── dist/                     ← l'uscita dell'officina (build)
-│           │   └── mazegen-1.0.0-py3-none-any.whl
-│           └── mazegen-1.0.0-py3-none-any.whl   ← copia alla RADICE (make wheel)
-├── consegna_amazeing/                    ← la consegna PULITA (i 14 pezzi)
-└── amazeing_repo/                        ← mirror git degli appunti
+amazeing/                                ← LA RADICE: la cartella del progetto
+├── a_maze_ing.py                        ← il main
+├── config_parser.py                     ← legge e valida config.txt
+├── mazegen.py                           ← il modulo riusabile
+├── display.py                           ← il menu interattivo
+├── output_writer.py                     ← scrive il file esadecimale
+├── config.txt                           ← la configurazione di esempio
+├── Makefile                             ← le scorciatoie (make ...)
+├── README.md                            ← la documentazione
+├── pyproject.toml                       ← la ricetta del pacchetto
+├── .gitignore                           ← i file da ignorare
+├── .flake8                              ← la configurazione di flake8
+├── mazegen-1.0.0-py3-none-any.whl       ← la scatola pronta (cap. VI)
+├── tests/                               ← i 3 file di test
+├── venv/                                ← LA CUCINA (fatta con make env)
+│   ├── bin/                             ← gli attrezzi: python, pip
+│   └── lib/python3.14/site-packages/    ← qui vivono i 4 tool
+└── dist/                                ← l'uscita dell'officina (make build)
+    └── mazegen-1.0.0-py3-none-any.whl
 
-/tmp/                                     ← cartella temporanea del sistema
-├── venv1/                                ← cucina 1 della sezione 6
-│   └── bin/python                        ← con dentro lo strumento build
-└── venv2/                                ← cucina 2 della sezione 6
+/tmp/                                    ← cartella temporanea del sistema
+├── venv1/                               ← la FABBRICA della sezione 6
+│   └── bin/python                       ← con dentro lo strumento build
+└── venv2/                               ← il CLIENTE della sezione 6
     ├── bin/python
     └── lib/python3.14/site-packages/mazegen.py  ← i biscotti installati
 ```
