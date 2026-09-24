@@ -3341,6 +3341,10 @@ cd /tmp
   punta a site-packages del venv2).
 - Nota 2: i venv di /tmp sono usa-e-getta: a fine sezione 6 si
   buttano via con rm -rf /tmp/venv1 /tmp/venv2.
+- Nota 4: NON serve memorizzare i comandi lunghi: sono scritti come
+  COMMENTI in fondo al Makefile (si aprono, si leggono, si digitano
+  — e si possono mostrare all'evaluator da lì). Non sono bersagli
+  make apposta: vanno digitati a mano perché sono la dimostrazione.
 - Nota 3: PERCHÉ la sezione 6 si fa a MANO e non con le shortcut:
   le shortcut (make lint/test/run) si usano eccome, per le sezioni
   1-5. Ma nella sezione 6 i comandi SONO la dimostrazione: la scala
