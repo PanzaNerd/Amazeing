@@ -3404,6 +3404,12 @@ cd /tmp
   (venv) non appare — ed è voluto. Risposta pronta: "Non serve
   attivarlo: il Makefile punta sempre a venv/bin/python, funziona
   anche senza activation."
+- E COME SI ESCE (se mai si attiva a mano): si scrive deactivate e
+  il (venv) sparisce dal prompt (oppure si chiude il terminale:
+  l'attivazione vale solo per quella finestra). Nel NOSTRO flusso
+  non si entra mai, quindi non c'è niente da cui uscire: i comandi
+  manuali della sezione 6 usano percorsi espliciti, e a fine sezione
+  le cucine si BUTTANO VIA con rm -rf /tmp/venv1 /tmp/venv2.
 - I COMANDI DIVISI PER CASA:
   - FUORI dalla cucina (python DI SISTEMA o operazioni sui file):
     python3 -m venv venv (il sistema CREA la cucina), make (lancia
