@@ -1,34 +1,54 @@
+# Ordine cronologico di utilizzo (tutto gira DENTRO il venv di 'make env',
+# niente da attivare):  make env -> make install -> make lint -> ...
+# NOTA: le ricette iniziano SEMPRE con un TAB, non con gli spazi.
 
 NAME = a_maze_ing.py
 CONFIG = config.txt
-SOURCES = a_maze_ing.py config_parser.py display.py mazegen.py output_writer.py
 
-.PHONY: all install run debug clean lint lint-strict test build
+.PHONY: all env install run debug test lint lint-strict build wheel clean
 
+# il bersaglio di default (bare 'make'): i controlli severi
 all: lint-strict
 
+# 1) la CUCINA: crea l'ambiente virtuale 'venv' (una volta sola per macchina)
+env:
+	python3 -m venv venv
+
+# 2) il CORRIERE: porta i 4 strumenti dentro la cucina (una volta sola)
 install:
-	python3 -m pip install flake8 mypy pytest build
+	venv/bin/python -m pip install flake8 mypy pytest build
 
+# 3) il programma: genera maze.txt e apre il display interattivo
 run:
-	python3 $(NAME) $(CONFIG)
+	venv/bin/python $(NAME) $(CONFIG)
 
+# 3) il debugger (pdb, come gdb)
 debug:
-	python3 -m pdb $(NAME) $(CONFIG)
+	venv/bin/python -m pdb $(NAME) $(CONFIG)
 
+# 3) il vigile: i 22 test
+test:
+	venv/bin/python -m pytest tests/ -v
+
+# 3) i controlli richiesti dal subject (flake8 + mypy coi flag esatti)
+lint:
+	venv/bin/python -m flake8 .
+	venv/bin/python -m mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
+
+# 3) la versione piu' severa dei controlli
+lint-strict:
+	venv/bin/python -m flake8 .
+	venv/bin/python -m mypy . --strict
+
+# 4) la SCATOLA: costruisce la wheel in dist/ (dalla ricetta pyproject.toml)
+build:
+	venv/bin/python -m build
+
+# 4) la scatola PRONTA alla radice (quella che il subject VI vuole committata)
+wheel:
+	venv/bin/python -m build
+	cp dist/mazegen-1.0.0-py3-none-any.whl ./mazegen-1.0.0-py3-none-any.whl
+
+# pulizia: cache e artefatti (NON tocca la cucina 'venv')
 clean:
 	rm -rf __pycache__ .mypy_cache .pytest_cache build dist *.egg-info
-
-lint:
-	flake8 .
-	mypy . --warn-return-any --warn-unused-ignores --ignore-missing-imports --disallow-untyped-defs --check-untyped-defs
-
-lint-strict:
-	flake8 .
-	mypy . --strict
-
-test:
-	python3 -m pytest tests/ -v
-
-build:
-	python3 -m build

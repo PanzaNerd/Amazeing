@@ -60,11 +60,13 @@ python3 a_maze_ing.py config.txt
 
 ## Come eseguire e testare il programma (comandi da terminale)
 
-Tutto parte dalla cartella del progetto:
+Tutto parte dalla cartella del progetto (niente da attivare: il
+Makefile usa il venv da solo):
 
 ```bash
 cd "~/Desktop/python repo/Common_Core_2/python/AMAZEING"
-source .venv/bin/activate        # attiva il venv (pip di sistema e' bloccato)
+make env       # 1) crea la cucina (venv) — una volta sola per macchina
+make install   # 2) il corriere porta i 4 strumenti — una volta sola
 ```
 
 **Eseguire il programma** (genera `maze.txt` e apre il display interattivo):
@@ -2853,8 +2855,9 @@ dove si scava di più.
 
 - DA CONSEGNARE: a_maze_ing.py (il main), config_parser.py,
   mazegen.py (generatore + solve, anche il modulo riusabile della
-  sezione 6), display.py, output_writer.py, Makefile (install/run/
-  debug/clean/lint/lint-strict: le regole del subject III.2),
+  sezione 6), display.py, output_writer.py, Makefile (le regole del
+  subject III.2 — install/run/debug/clean/lint — piu' env/test/
+  lint-strict/build/wheel, in ordine cronologico di utilizzo),
   config.txt (il programma si lancia con lui e l'evaluator lo
   EDITA), README.md (tutte le sezioni del VII), pyproject.toml (il
   build della wheel; e `mypy .` pulito senza pytest), tests/ (i 3
@@ -3075,6 +3078,54 @@ python3 -m venv /tmp/venv2
   scatola di biscotti (dentro il modulo, sopra l'etichetta);
   wheel = la scatola già sigillata; venv = una seconda cucina
   separata; pip = il corriere che porta le scatole in site-packages.
+
+### Il nuovo Makefile: dove lanciare cosa, quando il venv, uv, come si legge
+
+- IL MAKEFILE È IN ORDINE CRONOLOGICO DI UTILIZZO (ogni bersaglio ha
+  un commento breve nel file):
+  1. make env — crea la cucina (venv) nella cartella; una volta sola
+     per macchina;
+  2. make install — il corriere porta i 4 strumenti (flake8, mypy,
+     pytest, build) nella cucina; una volta sola;
+  3. make run / make debug / make test / make lint / make lint-strict
+     — il programma, il debugger (pdb), i 22 test, i controlli;
+  4. make build — costruisce la scatola in dist/; make wheel — la
+     costruisce E copia la scatola pronta alla radice (quella
+     committata, cap. VI);
+  5. make clean — butta cache e artefatti (NON tocca la cucina).
+- TUTTO gira nel venv senza attivarlo: le ricette chiamano
+  venv/bin/python (es. venv/bin/python -m pytest). Ecco perché make
+  lint funziona anche se non si è fatto source/activate.
+- DOVE LANCIARE I COMANDI (le tre postazioni):
+  1. LA TUA CARTELLA DI SVILUPPO (Common_Core_2/python/AMAZEING): qui
+     si lavora e si studia; make env/install una volta, poi il resto
+     a ogni modifica.
+  2. LA CARTELLA DI CONSEGNA (~/Desktop/consegna_amazeing, poi la
+     repo sulla macchina della scuola): qui si fa la prova generale e
+     l'evaluation; APPENA clonata: make env e make install, poi
+     make lint/test/run.
+  3. LE CARTELLE /tmp/venv1 e /tmp/venv2 DURANTE la sezione 6: create
+     AL MOMENTO con i comandi a mano (python3 -m venv /tmp/venv1 ...)
+     — NON col Makefile: servono a RICOSTRUIRE e INSTALLARE la
+     scatola davanti all'evaluator, e si buttano via subito dopo.
+- QUANDO CREARE IL VENV E COSA METTERCI: la cucina del progetto
+  (venv/) si crea UNA volta appena clonato il progetto; dentro ci
+  finiscono SOLO i 4 strumenti — il codice NON si sposta, resta
+  nella cartella del progetto. I venv di /tmp si creano solo alla
+  sezione 6, al momento, e sono usa-e-getta.
+- UV (visto nei Makefile di altri): il gestore MODERNO che fa venv e
+  pip insieme, più veloce (scritto in Rust): uv venv, uv pip install.
+  Noi NON lo usiamo: richiede un'installazione in più sulla macchina,
+  mentre python3 ce l'hanno tutti. Il subject III.2 ammette "pip,
+  uv, pipx o qualunque altro": pip è la scelta più semplice da
+  spiegare.
+- COME SI LEGGE UN MAKEFILE: ogni bersaglio è "nome:" seguito dalla
+  ricetta (le righe rientrate con un TAB, non spazi). Le variabili
+  (NAME, CONFIG) in cima valgono per tutte le ricette. .PHONY =
+  "questi nomi sono comandi, non file". all: lint-strict = il
+  bersaglio di default: bare make fa i controlli severi (all sta in
+  cima proprio per questo). In C: è lo stesso make dei progetti C —
+  qui i bersagli non compilano, lanciano comandi Python.
 
 ### Approfondimento: pip — il gestore di pacchetti
 
