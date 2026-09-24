@@ -3127,6 +3127,60 @@ python3 -m venv /tmp/venv2
   cima proprio per questo). In C: è lo stesso make dei progetti C —
   qui i bersagli non compilano, lanciano comandi Python.
 
+### Le due sequenze da zero (i comandi ORIGINALI che make esegue)
+
+CASE 1 — STUDIO, nella cartella di lavoro, da zero:
+
+```
+cd "~/Desktop/python repo/Common_Core_2/python/AMAZEING"
+python3 -m venv venv                       # = make env (una volta sola)
+venv/bin/python -m pip install flake8 mypy pytest build
+                                           # = make install (una volta sola)
+# poi, ogni giorno:
+venv/bin/python a_maze_ing.py config.txt   # = make run
+venv/bin/python -m pytest tests/ -v        # = make test
+venv/bin/python -m flake8 .                # = make lint (prima meta')
+venv/bin/python -m mypy . --strict         # = make lint-strict (seconda meta')
+venv/bin/python -m build                   # = make build (la scatola in dist/)
+cp dist/mazegen-1.0.0-py3-none-any.whl .   # = make wheel (la scatola pronta)
+rm -rf __pycache__ .mypy_cache .pytest_cache build dist *.egg-info
+                                           # = make clean
+python3 output_validator.py maze.txt       # il validatore (locale, mai pushato)
+```
+
+CASE 2 — EVALUATION, in ordine esatto (dopo aver clonato la repo o
+copiato la cartella di consegna sulla macchina della scuola, ed essere
+ENTRATI nella cartella):
+
+```
+python3 -m venv venv                       # = make env
+venv/bin/python -m pip install flake8 mypy pytest build   # = make install
+
+# sezioni 1-5: si mostra il progetto e il programma
+make lint        # i controlli del subject (flake8 . + mypy . coi flag)
+make test        # i 22 test (se chiesto)
+make run         # labirinto + menu: 1 rigenera, 2 percorso, 3 colori, q esce
+#   l'evaluator edita config.txt e ripete make run (errori e casi speciali)
+
+# sezione 6: il modulo riusabile, i 6 comandi A MANO
+python3 -m venv /tmp/venv1
+/tmp/venv1/bin/pip install build
+#   RIENTRARE nella cartella del progetto (dove sta pyproject.toml):
+/tmp/venv1/bin/python -m build
+python3 -m venv /tmp/venv2
+/tmp/venv2/bin/pip install dist/mazegen-1.0.0-py3-none-any.whl
+#   USCIRE dalla cartella: la prova che il modulo funziona ovunque:
+cd /tmp
+/tmp/venv2/bin/python -c "from mazegen import MazeGenerator; print('funziona')"
+```
+
+- Nota 1: il build della sezione 6 va lanciato DENTRO la cartella del
+  progetto (setuptools cerca lì pyproject.toml); la prova finale va
+  fatta FUORI (per dimostrare che si usa il modulo INSTALLATO, non il
+  file locale).
+- Nota 2: i venv di /tmp sono usa-e-getta: a fine sezione 6 si
+  buttano via con rm -rf /tmp/venv1 /tmp/venv2.
+
 ### Approfondimento: pip — il gestore di pacchetti
 
 - pip = "Pip Installs Packages": il GESTORE DI PACCHETTI di Python.
