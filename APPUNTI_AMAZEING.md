@@ -3315,6 +3315,32 @@ cd /tmp
   sezione 6: la prima per RICOSTRUIRE la scatola, la seconda per
   INSTALLARLA e provarla. A fine sezione: rm -rf /tmp/venv1
   /tmp/venv2.
+- IL (VENV) NEL PROMPT: appare SOLO se si attiva la cucina a mano
+  con source venv/bin/activate: il terminale mostra "(venv) $" e da
+  lì i comandi nudi (python3, flake8, pytest...) trovano da soli le
+  versioni della cucina. Attivare = mettere venv/bin in testa al
+  PATH: è una scorciatoia, non un obbligo. Noi NON attiviamo mai: il
+  Makefile chiama sempre venv/bin/python esplicitamente, quindi il
+  (venv) non appare — ed è voluto. Risposta pronta: "Non serve
+  attivarlo: il Makefile punta sempre a venv/bin/python, funziona
+  anche senza activation."
+- I COMANDI DIVISI PER CASA:
+  - FUORI dalla cucina (python DI SISTEMA o operazioni sui file):
+    python3 -m venv venv (il sistema CREA la cucina), make (lancia
+    le ricette), cp dist/...whl . (copia la scatola), rm -rf
+    (pulizia), cd e git.
+  - DENTRO la cucina (partono con venv/bin/python): pip install
+    (porta i tool), flake8, mypy, pytest, build, e l'esecuzione del
+    programma (a_maze_ing.py).
+- DOVE STARE IN PIEDI: tutti i make si lanciano DENTRO la cartella
+  del progetto — e "cartella clonata" e "cartella di lavoro" sono la
+  STESSA cosa: sulla scuola si clona il repo e quella diventa la
+  cartella di lavoro (la cartella di sviluppo ha solo in più le
+  scorie locali: output_validator.py ecc.). Nella sezione 6: la
+  creazione dei venv può avvenire ovunque; il build va nella
+  cartella del progetto (cerca pyproject.toml); l'install della
+  wheel va nella cartella del progetto (cerca dist/); la prova
+  finale va FUORI.
 
 L'ALBERO DELLE CARTELLE (dove sei e cosa stai facendo):
 
