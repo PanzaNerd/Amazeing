@@ -2989,6 +2989,16 @@ LA CARTELLA DI PROVA:
   piazzetta. "Come l'hai verificato?" → test + tracce negli appunti.
 - 42 presente, o messaggio sul terminale se troppo piccolo (sotto
   9x6): è il resoconto has_42 letto dal main.
+- CHE ALGORITMO ABBIAMO USATO? DUE, per due mestieri:
+  - GENERARE = recursive backtracker, cioè una DFS (la talpa, corda
+    LIFO): scava in profondità, il risultato è un albero ricoprente
+    → labirinto perfetto con esattamente un percorso.
+  - RISOLVERE = BFS (il fuoco, fila FIFO): avanza livello per
+    livello → garantisce il percorso PIÙ CORTO.
+  Il README parla della GENERAZIONE (il cap. VII chiede proprio
+  quello); appunti 1.4 e 1.5 spiegano entrambi; tutti e due vivono
+  in mazegen.py (_carve_maze = DFS, solve = BFS). Frase pronta:
+  "DFS per costruire, BFS per risolvere: è la divisione classica." 
 - PERFECT=True → un solo percorso: la talpa costruisce un albero
   ricoprente.
 
